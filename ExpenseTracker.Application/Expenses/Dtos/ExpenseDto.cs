@@ -1,9 +1,8 @@
-using ExpenseTracker.Domain.Common;
+namespace ExpenseTracker.Application.Expenses.Dtos;
 
-namespace ExpenseTracker.Domain.Entities;
-
-public class Expense : BaseEntity
+public class ExpenseDto
 {
+    public Guid Id { get; set; }
     public Guid UserId { get; set; }
     public decimal Amount { get; set; }
     public string Currency { get; set; } = "CAD";
