@@ -2,7 +2,7 @@ using ExpenseTracker.Domain.Entities;
 
 namespace ExpenseTracker.Domain.Repositories;
 
-public interface IExpenseRepository
+public interface IExpensesRepository
 {
     Task<IEnumerable<Expense>> GetExpensesByUserAsync(
         Guid userId, 
@@ -13,9 +13,7 @@ public interface IExpenseRepository
         CancellationToken cancellationToken = default);
     Task<Guid> AddExpenseAsync(
         Expense expense, CancellationToken cancellationToken = default);
-    Task DeleteExpenseAsync(
+    Task DeleteExpense(
         Expense expense, 
-        CancellationToken cancellationToken = default);
-    Task SaveChangesAsync(
         CancellationToken cancellationToken = default);
 }

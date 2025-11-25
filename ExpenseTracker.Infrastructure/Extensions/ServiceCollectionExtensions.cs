@@ -18,7 +18,7 @@ public static class ServiceCollectionExtensions
 
         var connectionString = configuration.GetConnectionString("RestaurantsDb");
         services.AddDbContext<ExpensesDbContext>(options => options.UseSqlite(connectionString).EnableSensitiveDataLogging());
-        services.AddScoped<IExpenseRepository, ExpensesRepository>();
+        services.AddScoped<IExpensesRepository, ExpensesRepository>();
     }
 
 

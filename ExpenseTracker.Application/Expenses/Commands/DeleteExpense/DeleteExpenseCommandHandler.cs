@@ -4,12 +4,13 @@ using Microsoft.Extensions.Logging;
 
 namespace ExpenseTracker.Application.Expenses.Commands.DeleteExpense;
 
-public sealed class DeleteExpenseCommandHandler(ILogger<DeleteExpenseCommandHandler> logger, IExpenseRepository expenseRepository) : IRequestHandler<DeleteExpenseCommand, bool>
+public sealed class DeleteExpenseCommandHandler(ILogger<DeleteExpenseCommandHandler> logger, IExpensesRepository expenseRepository, IUnitOfWork unitOfWork) : IRequestHandler<DeleteExpenseCommand, bool>
 {
     private readonly ILogger<DeleteExpenseCommandHandler> _logger = logger;
 
-    private readonly IExpenseRepository _expenseRepository = expenseRepository;
+    private readonly IExpensesRepository _expenseRepository = expenseRepository;
 
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
     public async Task<bool> Handle(DeleteExpenseCommand request, CancellationToken cancellationToken)
     {
         _logger.LogInformation(
@@ -27,8 +28,8 @@ public sealed class DeleteExpenseCommandHandler(ILogger<DeleteExpenseCommandHand
             return false;
         }
 
-        await _expenseRepository.DeleteExpenseAsync(expense, cancellationToken);
-        await _expenseRepository.SaveChangesAsync(cancellationToken);
+        await _expenseRepository.DeleteExpense(expense, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation(
             "Deleted expense for UserId: {UserId}, ExpenseId: {ExpenseId}",

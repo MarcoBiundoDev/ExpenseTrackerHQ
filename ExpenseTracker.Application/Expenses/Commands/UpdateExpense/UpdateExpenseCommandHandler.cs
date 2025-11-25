@@ -4,10 +4,11 @@ using Microsoft.Extensions.Logging;
 
 namespace ExpenseTracker.Application.Expenses.Commands.UpdateExpense;
 
-public sealed class UpdateExpenseCommandHandler(ILogger<UpdateExpenseCommandHandler> logger, IExpenseRepository expenseRepository) : IRequestHandler<UpdateExpenseCommand, bool>
+public sealed class UpdateExpenseCommandHandler(ILogger<UpdateExpenseCommandHandler> logger, IExpensesRepository expenseRepository, IUnitOfWork unitOfWork) : IRequestHandler<UpdateExpenseCommand, bool>
 {
     private readonly ILogger<UpdateExpenseCommandHandler> _logger = logger;
-    private readonly IExpenseRepository _expenseRepository = expenseRepository;
+    private readonly IExpensesRepository _expenseRepository = expenseRepository;
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task<bool> Handle(UpdateExpenseCommand request, CancellationToken cancellationToken)
     {
@@ -33,7 +34,7 @@ public sealed class UpdateExpenseCommandHandler(ILogger<UpdateExpenseCommandHand
         expense.Description = request.Description;
         expense.Date = request.Date;
 
-        await _expenseRepository.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation(
             "Successfully updated ExpenseId: {ExpenseId} for UserId: {UserId}",

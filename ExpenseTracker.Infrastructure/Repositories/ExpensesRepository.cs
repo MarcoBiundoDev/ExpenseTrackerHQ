@@ -1,34 +1,35 @@
 using System;
+using System.Linq;
 using ExpenseTracker.Domain.Entities;
 using ExpenseTracker.Domain.Repositories;
 using ExpenseTracker.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 namespace ExpenseTracker.Infrastructure.Repositories;
 
-public class ExpensesRepository(ExpensesDbContext dbContext) : IExpenseRepository
+public class ExpensesRepository(ExpensesDbContext dbContext) : IExpensesRepository
 {
-    public Task<Guid> AddExpenseAsync(Expense expense, CancellationToken cancellationToken = default)
+    public async Task<Guid> AddExpenseAsync(Expense expense, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        await dbContext.Expenses.AddAsync(expense, cancellationToken);
+        return expense.Id;
     }
 
-    public Task DeleteExpenseAsync(Expense expense, CancellationToken cancellationToken = default)
+    public Task DeleteExpense(Expense expense, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        dbContext.Expenses.Remove(expense);
+        return Task.CompletedTask;
     }
 
     public Task<Expense?> GetExpenseByIdAsync(Guid userId, Guid expenseId, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+       return dbContext.Expenses
+            .FirstOrDefaultAsync(e => e.Id == expenseId && e.UserId == userId, cancellationToken);
     }
 
-    public Task<IEnumerable<Expense>> GetExpensesByUserAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Expense>> GetExpensesByUserAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
-    }
-
-    public Task SaveChangesAsync(CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
+       IReadOnlyList<Expense> expense = await dbContext.Expenses.Where(e => e.UserId == userId).AsNoTracking().ToListAsync(cancellationToken);
+       return expense; 
     }
 }

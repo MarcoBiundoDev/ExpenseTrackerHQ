@@ -9,12 +9,12 @@ namespace ExpenseTracker.Application.Expenses.Queries.GetExpenseByIdQuery;
 public sealed class GetExpenseByIdQueryHandler(
     ILogger<GetExpenseByIdQueryHandler> logger,
     IMapper mapper,
-    IExpenseRepository expenseRepository)
+    IExpensesRepository expenseRepository)
     : IRequestHandler<GetExpenseByIdQuery, ExpenseDto?>
 {
     private readonly ILogger<GetExpenseByIdQueryHandler> _logger = logger;
     private readonly IMapper _mapper = mapper;
-    private readonly IExpenseRepository _expenseRepository = expenseRepository;
+    private readonly IExpensesRepository _expenseRepository = expenseRepository;
 
     
     public async Task<ExpenseDto?> Handle(

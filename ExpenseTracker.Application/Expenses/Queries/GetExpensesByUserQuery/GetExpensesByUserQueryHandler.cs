@@ -9,12 +9,12 @@ using ExpenseTracker.Domain.Repositories;
 public sealed class GetExpensesByUserQueryHandler(
     ILogger<GetExpensesByUserQueryHandler> logger, 
     IMapper mapper, 
-    IExpenseRepository expenseRepository) 
+    IExpensesRepository expenseRepository) 
     : IRequestHandler<GetExpensesByUserQuery, IEnumerable<ExpenseDto>>
 {
     private readonly ILogger<GetExpensesByUserQueryHandler> _logger = logger;
     private readonly IMapper _mapper = mapper;
-    private readonly IExpenseRepository _expenseRepository = expenseRepository;
+    private readonly IExpensesRepository _expenseRepository = expenseRepository;
 
     public async Task<IEnumerable<ExpenseDto>> Handle(
         GetExpensesByUserQuery request, 
