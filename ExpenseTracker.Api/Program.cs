@@ -20,7 +20,6 @@ builder.Host.UseSerilog((context, configuration) =>
 
 var app = builder.Build();
 
-
 app.UseSerilogRequestLogging();
 
 if (app.Environment.IsDevelopment())
