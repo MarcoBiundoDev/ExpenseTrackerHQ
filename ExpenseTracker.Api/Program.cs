@@ -17,6 +17,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddInfrastructure(builder.Configuration );
 builder.Services.AddApplication();
+builder.Services.AddHealthChecks();
 
 builder.Host.UseSerilog((context, configuration) =>
     configuration
@@ -28,7 +29,11 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ExpenseDbContext>();
-    dbContext.Database.Migrate(); // creates ExpenseTrackerDb and tables if they don't exist
+    var runMigrations = builder.Configuration.GetValue<bool>("RunMigrations");
+    if (runMigrations)
+    {  
+        dbContext.Database.Migrate();
+    }
 }
 
 app.UseSerilogRequestLogging();
@@ -42,5 +47,6 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseAuthorization();
+app.MapHealthChecks("/health");
 app.MapControllers();
 app.Run();
