@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: expense-api-config
+  labels:
+    {{- include "expense-api.labels" . | nindent 4 }}
+data:
+  ASPNETCORE_ENVIRONMENT: "Development"
+  RunMigrations: "false"

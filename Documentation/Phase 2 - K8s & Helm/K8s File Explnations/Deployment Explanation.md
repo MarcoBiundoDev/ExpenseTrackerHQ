@@ -1,4 +1,4 @@
-# Kubernetes Deployment – Expense API (Line‑by‑Line Explanation)
+<file name=0 path=/Users/marcobiundo/Documents/ExpenseTracker/ExpenseTracker.Api/Documentation/Phase 2 - K8s & Helm/K8s File Explnations/Deployment Explanation.md># Kubernetes Deployment – Expense API (Line‑by‑Line Explanation)
 
 This document explains the `expense-api-deployment.yaml` file line by line so that I can understand **what every section does** and eventually write a similar Deployment from scratch without copying.
 
@@ -29,11 +29,11 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
-          env:
-            - name: ASPNETCORE_ENVIRONMENT
-              value: "Development"
-            - name: RunMigrations
-              value: "false"
+          envFrom:
+            - configMapRef:
+                name: expense-api-config
+            - secretRef:
+                name: expense-api-secrets
           resources:
             requests:
               cpu: "100m"
@@ -198,11 +198,11 @@ spec:
       imagePullPolicy: Always
       ports:
         - containerPort: 8080
-      env:
-        - name: ASPNETCORE_ENVIRONMENT
-          value: "Development"
-        - name: RunMigrations
-          value: "false"
+      envFrom:
+        - configMapRef:
+            name: expense-api-config
+        - secretRef:
+            name: expense-api-secrets
       resources:
         ...
       readinessProbe:
@@ -278,28 +278,35 @@ ports:
 
 ---
 
-### `env:` – Environment Variables
+### `envFrom:` – Environment Variables from ConfigMaps and Secrets
 
 ```yaml
-env:
-  - name: ASPNETCORE_ENVIRONMENT
-    value: "Development"
-  - name: RunMigrations
-    value: "false"
+envFrom:
+  - configMapRef:
+      name: expense-api-config
+  - secretRef:
+      name: expense-api-secrets
 ```
 
-This section defines environment variables inside the container.
+Instead of defining environment variables directly in the Deployment, I now reference external Kubernetes resources:
 
-- `ASPNETCORE_ENVIRONMENT=Development`
-  - Tells ASP.NET Core to use the `Development` environment.
-  - Controls which appsettings files are used and what middleware is enabled.
+- `configMapRef` points to a ConfigMap named `expense-api-config`.
+- `secretRef` points to a Secret named `expense-api-secrets`.
 
-- `RunMigrations=false`
-  - This is a **custom flag** I added in `Program.cs`.
-  - In the startup code, I check this flag and **skip database migrations** when it is `false`.
-  - This is important in K8s because the database might not exist in the cluster yet. Skipping migrations prevents startup failures.
+Kubernetes will inject all key/value pairs from these resources as environment variables into the container.
 
-Later, these values can move into a `ConfigMap` or `Secret`, but defining them here is fine for learning.
+This approach helps me:
+
+- Separate configuration from code.
+- Manage sensitive data securely (Secrets).
+- Update configuration without changing the Deployment manifest.
+
+**How ASP.NET Core uses this:**
+
+ASP.NET Core maps environment variables with double underscores (`__`) to nested configuration keys. For example:
+
+- An environment variable named `ConnectionStrings__DefaultConnection` maps to the JSON path `ConnectionStrings:DefaultConnection`.
+- This allows complex configuration structures to be represented as flat environment variables.
 
 ---
 
@@ -404,6 +411,25 @@ Later, I can differentiate them if needed (e.g., `/health/ready` vs `/health/liv
 
 ---
 
+## Configuration Moved to ConfigMaps and Secrets
+
+Previously, environment variables like `ASPNETCORE_ENVIRONMENT` and `RunMigrations` were defined directly inside the Deployment manifest.
+
+Now, these configuration values have been moved out of the Deployment and into Kubernetes ConfigMaps and Secrets:
+
+- The ConfigMap `expense-api-config` holds non-sensitive configuration data.
+- The Secret `expense-api-secrets` holds sensitive data like passwords or API keys.
+
+The Deployment references these external resources via `envFrom`, which injects their key/value pairs as environment variables into the container.
+
+This separation allows:
+
+- Easier configuration management and updates without redeploying the application.
+- Secure handling of sensitive information.
+- Reuse of configurations across multiple Deployments or environments.
+
+---
+
 ## How All of This Fits Together
 
 1. **Deployment**:
@@ -417,7 +443,7 @@ Later, I can differentiate them if needed (e.g., `/health/ready` vs `/health/liv
 
 3. **Container Configuration**:
    - Runs ASP.NET Core on port 8080.
-   - Uses environment variables for environment and migrations behavior.
+   - Uses environment variables injected from ConfigMaps and Secrets for environment and migrations behavior.
    - Has basic CPU/memory hints.
 
 4. **Probes**:
@@ -436,3 +462,4 @@ The key patterns to remember:
 - **Labels + selectors = how Kubernetes wires resources together**
 - **Probes = how Kubernetes decides when to trust or restart my app**
 - **Resources = CPU/memory contract with the cluster**
+- **ConfigMaps and Secrets = externalized configuration management**

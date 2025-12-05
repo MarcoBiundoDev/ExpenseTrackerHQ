@@ -22,6 +22,7 @@ services:
       # e.g. ExpenseTracker.Api/ExpenseTracker.Api/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - RunMigrations=true
       - ConnectionStrings__ExpenseTrackerDb=Server=expense-sql,1433;Database=ExpenseTrackerDb;User Id=sa;Password=YourStrongPassword1!;TrustServerCertificate=True;
     ports:
       - "4200:8080"
