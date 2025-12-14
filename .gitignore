@@ -85,3 +85,6 @@ _ReSharper*/
 # End of file
 ###############################
 .DS_Store
+infra/terraform/env/dev/.terraform/modules/modules.json
+infra/terraform/env/dev/.terraform/providers/registry.terraform.io/hashicorp/azurerm/3.117.1/darwin_arm64/terraform-provider-azurerm_v3.117.1_x5
+infra/terraform/env/dev/.terraform/terraform.tfstate

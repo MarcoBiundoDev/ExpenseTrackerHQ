@@ -1,0 +1,10 @@
+variable "rg_name" { type = string }
+variable "location" { type = string }
+variable "vnet_name" { type = string }
+variable "vnet_cidr" { type = string }
+variable "aks_subnet_name" { type = string }
+variable "aks_subnet_cidr" { type = string }
+variable "sql_subnet_name" { type = string }
+variable "sql_subnet_cidr" { type = string }
+variable "aks_nsg_name" { type = string }
+variable "sql_nsg_name" { type = string }
