@@ -15,3 +15,15 @@ module "networking" {
   aks_nsg_name    = "nsg-expensetracker-aks-dev"
   sql_nsg_name    = "nsg-expensetracker-sql-dev"
 }
+
+module "acr" {
+  source   = "../../modules/acr"
+  rg_name  = module.networking.rg_name
+  location = module.networking.location
+  acr_name = "acrexptrackerhqdev01"
+  sku      = "Basic"
+  tags = {
+    project = "ExpenseTrackerHQ"
+    env     = "dev"
+  }
+}
