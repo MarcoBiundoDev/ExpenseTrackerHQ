@@ -8,13 +8,14 @@ resource "azurerm_kubernetes_cluster" "aks" {
     type = "SystemAssigned"
   }
   default_node_pool {
-    name                 = "system"
-    vm_size              = var.system_node_vm_size
-    vnet_subnet_id       = var.subnet_id
-    type                 = "VirtualMachineScaleSets"
-    enable_auto_scaling  = false
-    node_count           = var.system_node_count
-    orchestrator_version = var.kubernetes_version
+    name                        = "system"
+    vm_size                     = var.system_node_vm_size
+    vnet_subnet_id              = var.subnet_id
+    type                        = "VirtualMachineScaleSets"
+    enable_auto_scaling         = false
+    node_count                  = var.system_node_count
+    orchestrator_version        = var.kubernetes_version
+    temporary_name_for_rotation = "systemtmp"
 
   }
   network_profile {

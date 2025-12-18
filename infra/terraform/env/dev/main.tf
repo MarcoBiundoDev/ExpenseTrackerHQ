@@ -37,12 +37,10 @@ module "aks" {
   subnet_id           = module.networking.aks_subnet_id.id
   kubernetes_version  = null
   system_node_count   = 1
-  system_node_max     = 3
-  system_node_min     = 1
-  system_node_vm_size = "Standard_D2_v3"
+  system_node_vm_size = "Standard_B2s_v2"
   service_cidr        = "10.1.0.0/16"
   dns_service_ip      = "10.1.0.10"
-  user_node_vm_size   = "Standard_D2_v3"
+  user_node_vm_size   = "Standard_B2s_v2"
   user_node_min       = 0
   user_node_max       = 2
 
