@@ -47,3 +47,30 @@ resource "azurerm_subnet_network_security_group_association" "sql" {
   network_security_group_id = azurerm_network_security_group.sql.id
 }
 
+resource "azurerm_network_security_rule" "allow_k8s_nodeports_internet" {
+  name                        = "allow-k8s-nodeports-internet"
+  priority                    = var.nodeport_rule_priority
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  destination_port_ranges     = var.nodeport_range
+  source_address_prefix       = var.allowed_source_prefix
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.network.name
+  network_security_group_name = azurerm_network_security_group.aks.name
+}
+
+resource "azurerm_network_security_rule" "allow_http_internet" {
+  name                        = "allow-http-internet"
+  priority                    = 170
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  destination_port_ranges     = ["80", "443"]
+  source_address_prefix       = "Internet"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.network.name
+  network_security_group_name = azurerm_network_security_group.aks.name
+}
