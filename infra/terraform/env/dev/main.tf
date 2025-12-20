@@ -34,7 +34,7 @@ module "aks" {
   location            = module.networking.location
   aks_name            = "aks-expensetracker-dev"
   dns_prefix          = "aks-expense-dev"
-  subnet_id           = module.networking.aks_subnet_id.id
+  subnet_id           = module.networking.aks_subnet_id
   kubernetes_version  = null
   system_node_count   = 1
   system_node_vm_size = "Standard_B2s_v2"
@@ -49,3 +49,48 @@ module "aks" {
     env     = "dev"
   }
 }
+
+module "sql" {
+  source          = "../../modules/sql"
+  sql_server_name = "sql-expensetracker-dev-mb1319"
+  rg_name         = module.networking.rg_name
+  location        = module.networking.location
+  admin_login     = var.sql_admin_login
+  admin_password  = var.sql_admin_password
+  sql_db_name     = "sqldb-expensetracker-dev"
+
+  tags = {
+    project = "ExpenseTrackerHQ"
+    env     = "dev"
+  }
+}
+
+module "private_dns_sql" {
+  source   = "../../modules/private-dns-sql"
+  rg_name  = module.networking.rg_name
+  location = module.networking.location
+  vnet_id  = module.networking.vnet_id
+
+  tags = {
+    project = "ExpenseTrackerHQ"
+    env     = "dev"
+  }
+}
+
+
+module "private_endpoint_sql" {
+  source                = "../../modules/private-endpoint-sql"
+  rg_name               = module.networking.rg_name
+  location              = module.networking.location
+  subnet_id             = module.networking.sql_subnet_id
+  private_endpoint_name = "pe-sql-expensetracker-dev"
+  sql_server_id         = module.sql.sql_server_id
+  private_dns_zone_id   = module.private_dns_sql.private_dns_zone_id
+  tags = {
+    project = "ExpenseTrackerHQ"
+    env     = "dev"
+  }
+}
+
+
+
