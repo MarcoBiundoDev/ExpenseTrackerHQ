@@ -7,3 +7,5 @@ metadata:
 data:
   ASPNETCORE_ENVIRONMENT: "Development"
   RunMigrations: "false"
+  KeyVault__Uri: "https://expensetracker-dev-kv.vault.azure.net/"
+  AZURE_CLIENT_ID: "ded51d97-e258-48ca-8448-e4565311ec78"

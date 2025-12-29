@@ -1,5 +1,7 @@
 
-
+using Azure.Extensions.AspNetCore.Configuration.Secrets;
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
 using ExpenseTracker.Infrastructure.Extensions;
 using ExpenseTracker.Application.Extensions;
 using Serilog;
@@ -9,6 +11,15 @@ using ExpenseTracker.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+// --- Azure Key Vault configuration (Workload Identity / Managed Identity) ---
+// If KeyVault__Uri is set (env var -> KeyVault:Uri), we add Key Vault as a configuration provider.
+// This allows secrets like `ConnectionStrings--DefaultConnection` to bind to `ConnectionStrings:DefaultConnection`.
+var keyVaultUri = builder.Configuration["KeyVault:Uri"];
+if (!string.IsNullOrWhiteSpace(keyVaultUri))
+{
+    var secretClient = new SecretClient(new Uri(keyVaultUri), new DefaultAzureCredential());
+    builder.Configuration.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
+}
 
 
 builder.Services.AddControllers(); 

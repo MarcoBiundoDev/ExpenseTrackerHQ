@@ -1,0 +1,20 @@
+serviceAccount:
+  create: true
+  name: expense-api
+  annotations:
+    azure.workload.identity/client-id: "ded51d97-e258-48ca-8448-e4565311ec78"
+workloadIdentity:
+  clientId: "ded51d97-e258-48ca-8448-e4565311ec78"
+
+keyVault:
+  uri: "https://expensetracker-dev-kv.vault.azure.net/"
+
+podLabels:
+  azure.workload.identity/use: "true"
+image:
+  tag: "dev-3eea53f"   
+migrations:
+  enabled: true
+  image:
+    repository: acrexptrackerhqdev01.azurecr.io/expense-migrator
+    tag: "dev-20251229-152323"

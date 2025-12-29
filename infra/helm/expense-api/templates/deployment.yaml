@@ -16,11 +16,12 @@ spec:
         {{- with .Values.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
-    spec:
       {{- with .Values.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount.name | default (include "expense-api.serviceAccountName" .) }}
       containers:
         - name: {{ include "expense-api.name" . }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
