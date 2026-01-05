@@ -36,7 +36,7 @@ spec:
 
 ## `kind: Service`
 
-- **What it is:** The type of Kubernetes resource we're defining.
+- **What it is:** The type of Kubernetes resource I'm defining.
 - A **Service** provides a **stable, fixed IP + DNS name** that forwards traffic to one or more Pods.
 - Without a Service, Pods only have their own internal IPs, which change on every restart.
 
@@ -131,7 +131,7 @@ labels:
   app: expense-api
 ```
 
-These are the exact labels we applied in the Deployment’s Pod template — this is how everything connects.
+These are the exact labels I applied in the Deployment’s Pod template — this is how everything connects.
 
 If labels don't match:
 - Service sends traffic **nowhere**
