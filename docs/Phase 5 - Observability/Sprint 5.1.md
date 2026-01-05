@@ -8,7 +8,7 @@ This document is the **authoritative reference (“holy bible”)** for Sprint 5
 
 It is written so that:
 - You can **re‑implement this entire sprint in a different project** without rediscovering decisions
-- Every **design choice is justified** (what we did, what we avoided, and why)
+- Every **design choice is justified** (what I did, what I avoided, and why)
 - Every **command and line of code** is explained at a senior / production level
 
 Sprint 5.1 establishes **end‑to‑end distributed tracing and metrics** using **OpenTelemetry** and **Azure Monitor / Application Insights** in a Kubernetes (AKS) environment.
