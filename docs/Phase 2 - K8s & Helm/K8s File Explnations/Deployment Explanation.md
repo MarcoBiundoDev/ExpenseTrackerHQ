@@ -1,4 +1,3 @@
-<file name=0 path=/Users/marcobiundo/Documents/ExpenseTracker/ExpenseTracker.Api/Documentation/Phase 2 - K8s & Helm/K8s File Explnations/Deployment Explanation.md># Kubernetes Deployment – Expense API (Line‑by‑Line Explanation)
 
 This document explains the `expense-api-deployment.yaml` file line by line so that I can understand **what every section does** and eventually write a similar Deployment from scratch without copying.
 
