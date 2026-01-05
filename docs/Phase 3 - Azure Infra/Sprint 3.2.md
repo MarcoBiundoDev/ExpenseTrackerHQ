@@ -99,7 +99,7 @@ network_profile {
   - One IP inside the service CIDR
   - Used by CoreDNS
 
-### Real Failure We Hit
+### Real Failure I Hit
 AKS failed to create because:
 - VNet CIDR: `10.0.0.0/16`
 - Default service CIDR overlapped
