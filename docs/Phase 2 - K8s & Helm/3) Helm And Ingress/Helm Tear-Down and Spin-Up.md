@@ -107,7 +107,7 @@ Use this when you want to:
 - After a tear down
 - Or when starting a new dev session
 
-We assume you are in the repo root:
+I assume you are in the repo root:
 
 ```bash
 cd /Users/marcobiundo/Documents/ExpenseTracker/ExpenseTrackerHQ
@@ -211,7 +211,7 @@ Add the line if it is missing, then save and exit.
 
 ### Step 5 — Port-Forward the Ingress Controller (Local Dev Only)
 
-Because Docker Desktop cannot provision a real cloud LoadBalancer, the ingress service external IP stays `<pending>`. NodePort is not directly reachable from macOS, so we **port-forward the ingress controller** to make local access work.
+Because Docker Desktop cannot provision a real cloud LoadBalancer, the ingress service external IP stays `<pending>`. NodePort is not directly reachable from macOS, so I **port-forward the ingress controller** to make local access work.
 
 Run:
 
