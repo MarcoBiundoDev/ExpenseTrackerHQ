@@ -11,7 +11,7 @@ Sprint 4.1 establishes the **security foundation** for Phase 4. The goal is to e
 - AKS workloads authenticate to Azure services using **identity**, not credentials
 - Access is enforced using **Azure RBAC** and **least privilege**
 
-By the end of this sprint, we prove that a workload running inside AKS can read a secret from Azure Key Vault using **Workload Identity**, with **no secrets involved**.
+By the end of this sprint, I proved that a workload running inside AKS can read a secret from Azure Key Vault using **Workload Identity**, with **no secrets involved**.
 
 ---
 
