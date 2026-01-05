@@ -25,6 +25,10 @@ output "aks_identity_type" {
   value = azurerm_kubernetes_cluster.aks.identity[0].type
 }
 
+output "cluster_id" {
+  value = azurerm_kubernetes_cluster.aks.id
+}
+
 
 output "kubelet_object_id" {
   value = try(azurerm_kubernetes_cluster.aks.kubelet_identity[0].object_id, null)

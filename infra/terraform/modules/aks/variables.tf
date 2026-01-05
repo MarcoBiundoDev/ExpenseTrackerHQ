@@ -60,3 +60,8 @@ variable "user_node_max" {
   type    = number
   default = 2
 }
+
+variable "lawId" {
+  type = string
+}
+

@@ -20,6 +20,10 @@ resource "azurerm_kubernetes_cluster" "aks" {
     temporary_name_for_rotation = "systemtmp"
 
   }
+  oms_agent {
+    log_analytics_workspace_id      = var.lawId
+    msi_auth_for_monitoring_enabled = true
+  }
   network_profile {
     network_plugin = "azure"
     service_cidr   = var.service_cidr
@@ -27,6 +31,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
   }
   tags = var.tags
 }
+
 
 resource "azurerm_kubernetes_cluster_node_pool" "user" {
   name                  = "user"

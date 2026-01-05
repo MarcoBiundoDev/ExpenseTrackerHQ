@@ -16,7 +16,7 @@ auth:
 podLabels:
   azure.workload.identity/use: "true"
 image:
-  tag: "430-jwt"   
+  tag: "dev-20260104-192347"   
 migrations:
   enabled: true
   image:

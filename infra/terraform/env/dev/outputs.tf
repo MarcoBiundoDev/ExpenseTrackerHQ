@@ -7,3 +7,12 @@ output "sql_private_endpoint_ip" { value = module.private_endpoint_sql.private_e
 output "private_dns_zone_name" { value = module.private_dns_sql.private_dns_zone_name }
 output "apim_name" { value = module.apim.name }
 output "apim_gateway_url" { value = module.apim.gateway_url }
+
+output "app_insights_connection_string" {
+  value     = module.observability.application_insights_connection_string
+  sensitive = true
+}
+
+output "log_analytics_workspace_id" {
+  value = module.observability.log_analytics_workspace_id
+}

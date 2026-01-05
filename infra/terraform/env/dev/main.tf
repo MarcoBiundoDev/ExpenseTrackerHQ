@@ -50,6 +50,7 @@ module "aks" {
   user_node_min       = 0
   user_node_max       = 2
   tags                = local.tags
+  lawId               = module.observability.log_analytics_workspace_id
 }
 
 module "sql" {
@@ -102,4 +103,18 @@ module "apim" {
   tags                = local.tags
 }
 
+module "observability" {
+  source      = "../../modules/observability"
+  rg_name     = "rg-expensetracker-observability-dev"
+  location    = module.networking.location
+  env         = local.tags.env
+  tags        = local.tags
+  name_prefix = local.prefix
+  aks_id      = module.aks.cluster_id
+}
 
+resource "azurerm_key_vault_secret" "appinsights_connection_string" {
+  name         = "appinsights-connection-string"
+  value        = module.observability.application_insights_connection_string
+  key_vault_id = module.keyvault.id
+}
