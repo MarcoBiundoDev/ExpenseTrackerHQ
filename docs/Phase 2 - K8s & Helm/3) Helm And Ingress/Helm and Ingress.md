@@ -99,7 +99,7 @@ Everything inside `templates/` becomes **real YAML** when rendered.
 
 # 🧠 Part 3 — Moving Templates Into Helm
 
-We replaced Helm’s default templates with our real Kubernetes resources.
+I replaced Helm’s default templates with our real Kubernetes resources.
 
 Hard-coded values such as:
 
@@ -122,7 +122,7 @@ Different environments (dev, test, prod) may use different:
 - resource limits
 - hostnames
 
-Instead of modifying YAML files directly, we override values in:
+Instead of modifying YAML files directly, I override values in:
 - `values.yaml`
 - or via `--set` flags
 
