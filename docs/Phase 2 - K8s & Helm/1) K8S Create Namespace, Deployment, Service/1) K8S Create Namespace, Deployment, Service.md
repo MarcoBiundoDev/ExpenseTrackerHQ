@@ -97,7 +97,7 @@ spec:
           ports:
             - containerPort: 8080
           env:
-            # We'll later move these to ConfigMap / Secret
+            # I'll later move these to ConfigMap / Secret
             - name: ASPNETCORE_ENVIRONMENT
               value: "Development"
           resources:
