@@ -1,6 +1,6 @@
 # Sprint 3.3 — Helm + Ingress on AKS (Public Access)
 
-> **Scope note (important):** This document intentionally **excludes** the earlier “first attempt” ingress run where we went too fast and later decided to backtrack. It documents the **clean restart** (after backtracking) and everything we did from that point onward.
+> **Scope note (important):** This document intentionally **excludes** the earlier “first attempt” ingress run where I went too fast and later decided to backtrack. It documents the **clean restart** (after backtracking) and everything I did from that point onward.
 >
 > **Goal of Sprint 3.3:**
 > - Deploy the Expense API to AKS using Helm.
@@ -13,21 +13,21 @@
 
 ## Outcomes
 
-By the end of this sprint we achieved:
+By the end of this sprint I achieved:
 
 - ✅ `expense-api` deployed to **AKS** via **Helm** in namespace `expense-dev`.
 - ✅ API reachable internally (cluster networking) and via port-forward.
 - ✅ **ingress-nginx** installed and exposed via an Azure **LoadBalancer** with a public IP.
 - ✅ Ingress routes correctly to the API (including Swagger) when the **Host header** matches.
-- ✅ We fixed the “can’t reach public IP” issue by addressing:
+- ✅ I fixed the “can’t reach public IP” issue by addressing:
   - Azure LB health probe behavior (`/healthz`) for ingress-nginx
   - NSG inbound rules for NodePorts and public HTTP/HTTPS
   - A local **/etc/hosts** override that was hijacking browser testing
-- ✅ We returned NSG rules to the known-good state via **Terraform** reconciliation.
+- ✅ I returned NSG rules to the known-good state via **Terraform** reconciliation.
 
 ---
 
-## Architecture we built (mental model)
+## Architecture I built (mental model)
 
 ### Public request flow
 
@@ -51,7 +51,7 @@ This is why (in our environment) **NodePort reachability and LB health probes** 
 ## Step 1 — Confirm baseline: Helm deploy on AKS (no public ingress yet)
 
 ### Namespace
-We use a dedicated namespace for the dev environment:
+I use a dedicated namespace for the dev environment:
 
 - **Namespace:** `expense-dev`
 
@@ -70,7 +70,7 @@ kubectl create namespace expense-dev
 
 ### Helm install/upgrade (Expense API)
 
-From the directory containing your chart (where `Chart.yaml` lives), we deploy using:
+From the directory containing your chart (where `Chart.yaml` lives), I deploy using:
 
 ```bash
 helm upgrade --install expense-api . \
@@ -101,7 +101,7 @@ This is the standard approach because:
 ## Step 2 — Fix a Helm ownership conflict (Ingress resource)
 
 ### What happened
-We ran Helm and got an error like:
+I ran Helm and got an error like:
 
 > An Ingress named `expense-api` already exists, but it is not owned by this Helm release.
 
@@ -109,8 +109,8 @@ This happens when:
 - An ingress resource exists from a previous manual apply (`kubectl apply`) or another release.
 - Helm refuses to take ownership because Helm tracks resources using labels/annotations.
 
-### The fix we chose (Option A)
-We deleted the existing ingress and let Helm recreate it:
+### The fix I chose (Option A)
+I deleted the existing ingress and let Helm recreate it:
 
 ```bash
 kubectl delete ingress expense-api -n expense-dev
@@ -122,7 +122,7 @@ kubectl delete ingress expense-api -n expense-dev
 - `expense-api` = the resource name
 - `-n expense-dev` = the namespace where it lives
 
-Then we re-ran Helm:
+Then I re-ran Helm:
 
 ```bash
 helm upgrade --install expense-api . -n expense-dev
@@ -136,15 +136,15 @@ helm upgrade --install expense-api . -n expense-dev
 
 ## Step 3 — Prepare the API for health probes
 
-### Why we changed probes
+### Why I changed probes
 Kubernetes uses probes to determine:
 - **Readiness:** should this pod receive traffic?
 - **Liveness:** should Kubernetes restart this pod?
 
 If you probe a path that returns 404 (like `/` on many APIs), the pod can be marked unready and traffic routing becomes unreliable.
 
-### What we changed
-In your Helm values (for the `expense-api` chart), we updated probes from `/` to `/health`:
+### What I changed
+In your Helm values (for the `expense-api` chart), I updated probes from `/` to `/health`:
 
 ```yaml
 livenessProbe:
@@ -169,7 +169,7 @@ readinessProbe:
 ## Step 4 — Install NGINX Ingress Controller (AKS)
 
 ### Why ingress-nginx
-We use ingress-nginx because:
+I use ingress-nginx because:
 - It’s the standard Kubernetes ingress controller.
 - It supports host/path routing.
 - It integrates well with AKS and Azure Load Balancers.
@@ -201,7 +201,7 @@ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
 kubectl get svc -n ingress-nginx
 ```
 
-What we look for:
+What I look for:
 - `ingress-nginx-controller` Service
 - `TYPE: LoadBalancer`
 - An `EXTERNAL-IP` value
@@ -210,7 +210,7 @@ What we look for:
 
 ## Step 5 — Create (or re-enable) API Ingress routing
 
-### Why we use a Hostname (e.g., `expense.local`)
+### Why I use a Hostname (e.g., `expense.local`)
 Ingress often routes based on a “Host”:
 - In production: `api.yourdomain.com`
 - In dev/demo: `expense.local`
@@ -228,15 +228,15 @@ This distinction becomes crucial for debugging.
 
 ## Step 6 — Debugging: “Public IP times out”
 
-At this point we saw:
-- We had an external IP
+At this point I saw:
+- I had an external IP
 - But **curl to the public IP timed out** (even from phone LTE)
 
 That means it’s not just a local network problem.
 
 ### 6.1 Validate whether the Load Balancer is reachable at all
 
-We tested basic TCP connectivity:
+I tested basic TCP connectivity:
 
 ```bash
 nc -vz <PUBLIC_IP> 80
@@ -262,7 +262,7 @@ This sprint had two different “health” concepts:
 ### A) Azure Load Balancer probe (ingress-nginx infrastructure)
 Azure must decide whether the backend is “healthy” to forward internet traffic. If the probe is failing, the public IP can time out.
 
-We configured the ingress-nginx service annotation so Azure probes a known endpoint:
+I configured the ingress-nginx service annotation so Azure probes a known endpoint:
 
 - **LB probe path:** `/healthz`
 
@@ -281,7 +281,7 @@ This is your application’s health endpoint used for:
 
 ## Step 8 — Validate that ingress is routing correctly (Host header)
 
-Once we had a reachable public IP, we saw nginx respond with `404` when hitting the raw IP. That’s normal with host-based routing.
+Once I had a reachable public IP, I saw nginx respond with `404` when hitting the raw IP. That’s normal with host-based routing.
 
 ### Correct test using Host header
 
@@ -307,7 +307,7 @@ When these returned **200**, it proved:
 ## Step 9 — Browser confusion: the real culprit was `/etc/hosts`
 
 ### Symptom
-We could get `200` from curl (with Host header), but opening `http://expense.local/...` in a browser didn’t behave as expected.
+I could get `200` from curl (with Host header), but opening `http://expense.local/...` in a browser didn’t behave as expected.
 
 ### Root cause
 A previous minikube setup had:
@@ -323,7 +323,7 @@ This caused:
 So the browser was *never actually reaching Azure*.
 
 ### Fix
-We updated `/etc/hosts` so `expense.local` points to the AKS public IP, and removed/commented the localhost mapping.
+I updated `/etc/hosts` so `expense.local` points to the AKS public IP, and removed/commented the localhost mapping.
 
 Example:
 
@@ -332,7 +332,7 @@ Example:
 4.229.153.138 expense.local
 ```
 
-Then we flushed DNS cache (macOS):
+Then I flushed DNS cache (macOS):
 
 ```bash
 sudo dscacheutil -flushcache
@@ -350,7 +350,7 @@ After that, the browser correctly loaded:
 
 ---
 
-## Step 10 — NSG rules: what we added, what we removed, and why it broke
+## Step 10 — NSG rules: what I added, what I removed, and why it broke
 
 This was the most confusing part of the night, so here is the clean, correct summary.
 
@@ -360,8 +360,8 @@ In our setup, the ingress controller is exposed via an Azure LoadBalancer that f
 If the NSG blocks those NodePorts, public traffic can fail.
 
 ### What happened
-1. We had a working state.
-2. We attempted a “least privilege” cleanup by deleting rules:
+1. I had a working state.
+2. I attempted a “least privilege” cleanup by deleting rules:
    - `Internet → 30000–32767`
    - `Internet → 80/443`
 3. After deleting them, ingress stopped working.
@@ -369,8 +369,8 @@ If the NSG blocks those NodePorts, public traffic can fail.
 ### Why that happened
 In *your* current network posture, the subnet NSG rules you had in Terraform were part of the working flow. Removing them blocked inbound traffic needed for this environment.
 
-### How we fixed it (the professional approach)
-Instead of re-adding rules manually in the portal, we:
+### How I fixed it (the professional approach)
+Instead of re-adding rules manually in the portal, I:
 - deleted the incorrect new rules
 - ran **Terraform apply**
 - Terraform reconciled the NSG back to the known-good state
@@ -379,14 +379,14 @@ This is the exact kind of “senior” behavior you want:
 - treat Terraform as the source of truth
 - let it restore the correct configuration
 
-### What NSG rules we keep (for now)
-We keep the rules Terraform defines because:
+### What NSG rules I keep (for now)
+I keep the rules Terraform defines because:
 - they are proven to work
 - they are repeatable
 - they prevent “portal drift”
 
 **Future improvement (optional):**
-When we have time, we can tighten rules to only the specific NodePorts used by ingress rather than the full 30000–32767 range.
+When I have time, I can tighten rules to only the specific NodePorts used by ingress rather than the full 30000–32767 range.
 
 ---
 
@@ -400,7 +400,7 @@ Ingress creates Azure resources that may incur cost:
 ### The main cost driver
 AKS node VM(s) are the biggest cost driver. Load balancer and public IP are usually smaller but not always zero.
 
-### Cost control approach we used
+### Cost control approach I used
 - Keep cluster small
 - Use start/stop for AKS when not actively working (where supported)
 - Don’t leave extra node pools running unnecessarily
