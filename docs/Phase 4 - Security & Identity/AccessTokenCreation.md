@@ -20,7 +20,7 @@ You will use the **ExpenseTracker Postman** app registration (public/native clie
 ## One-time prerequisites (already done, but good to know)
 
 ### Postman app registration (why it exists)
-We created a **separate app registration** specifically for Postman because SPA app types can cause token redemption issues in Postman.
+I created a **separate app registration** specifically for Postman because SPA app types can cause token redemption issues in Postman.
 
 This Postman client is a **public client** (no secret) that supports PKCE.
 
