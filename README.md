@@ -75,7 +75,10 @@ ExpenseTrackerHQ/
 │   ├── phase-1/             # API & local infrastructure notes
 │   ├── phase-2/             # Kubernetes & Helm notes
 │   ├── phase-3/             # Azure & Terraform notes
+│   ├── phase-4/             # Security and Auth
+│   ├── phase-5/             # Observability
 │   └── terraform/           # Terraform learning & reference material
 │
 ├── scripts/                 # Helper scripts (local dev, CI/CD)
+
 └── README.md
