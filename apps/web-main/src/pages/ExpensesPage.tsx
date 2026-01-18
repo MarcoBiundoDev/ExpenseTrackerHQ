@@ -1,0 +1,267 @@
+import { Fragment, useEffect, useMemo, useState } from "react";
+
+import { AppHeader } from "@/components/layout/AppHeader";
+import { MonthTabs } from "@/components/expenses/MonthTabs";
+import { AddExpenseModal } from "@/components/expenses/AddExpenseModal";
+import { InlineEditExpenseRow } from "@/components/expenses/InlineEditExpenseRow";
+import { DeleteExpenseDialog } from "@/components/expenses/DeleteExpenseDialog";
+import {
+  createExpense,
+  deleteExpense,
+  getExpenses,
+  updateExpense,
+} from "@/features/expenses/expenseApi";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { formatDate, monthKeyFromIsoDate } from "@/lib/date";
+import type { Expense } from "@/types/expense";
+
+export function ExpensesPage() {
+  const [month, setMonth] = useState("Jan");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const safeExpenses = Array.isArray(expenses) ? expenses : [];
+
+  const filtered = useMemo(() => {
+    return safeExpenses
+      .filter((e) => monthKeyFromIsoDate(e.date) === month)
+      .sort((a, b) => b.date.localeCompare(a.date));
+  }, [safeExpenses, month]);
+
+  const total = useMemo(() => {
+    return filtered.reduce((sum, e) => sum + e.amount, 0);
+  }, [filtered]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await getExpenses();
+        if (!cancelled) setExpenses(data);
+      } catch {
+        if (!cancelled) setError("Failed to load expenses from API.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  function toIsoUtc(dateYYYYMMDD: string) {
+    // Use noon UTC to avoid timezone shifting to the previous day
+    return new Date(`${dateYYYYMMDD}T12:00:00Z`).toISOString();
+  }
+
+  function toApiDate(date: string) {
+    // If already ISO, keep it; if YYYY-MM-DD, convert.
+    return date.includes("T") ? date : toIsoUtc(date);
+  }
+
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <AppHeader />
+
+      <main className="mx-auto max-w-5xl px-4 py-5 sm:px-6 sm:py-6">
+        <div className="space-y-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <MonthTabs value={month} onChange={setMonth} />
+
+            <div className="w-full sm:flex sm:w-auto sm:justify-end">
+              <AddExpenseModal
+                onAdd={async (e) => {
+                  try {
+                    setError(null);
+
+                    const created = await createExpense({
+                      amount: e.amount,
+                      currency: "CAD",
+                      category: e.category,
+                      date: toIsoUtc(e.date),
+                      description: e.description,
+                    });
+
+                    setExpenses((prev) => [created, ...prev]);
+                  } catch {
+                    setError("Failed to add expense.");
+                  }
+                }}
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch sm:justify-between">
+            <Card className="flex-1">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-muted-foreground">
+                  Total for {month}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-semibold">${total.toFixed(2)}</div>
+                <div className="text-sm text-muted-foreground">
+                  {filtered.length} expenses
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Expenses</CardTitle>
+            </CardHeader>
+
+            <CardContent>
+              <div className="-mx-2 overflow-x-auto px-2">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead className="hidden sm:table-cell">
+                        Description
+                      </TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+
+                  <TableBody>
+                    {loading ? (
+                      <TableRow>
+                        <TableCell
+                          colSpan={5}
+                          className="text-center text-sm text-muted-foreground"
+                        >
+                          Loading expenses...
+                        </TableCell>
+                      </TableRow>
+                    ) : error ? (
+                      <TableRow>
+                        <TableCell
+                          colSpan={5}
+                          className="text-center text-sm text-destructive"
+                        >
+                          {error}
+                        </TableCell>
+                      </TableRow>
+                    ) : filtered.length === 0 ? (
+                      <TableRow>
+                        <TableCell
+                          colSpan={5}
+                          className="text-center text-sm text-muted-foreground"
+                        >
+                          No expenses yet
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filtered.map((e) => (
+                        <Fragment key={e.id}>
+                          <TableRow>
+                            <TableCell>{formatDate(e.date)}</TableCell>
+                            <TableCell>{e.category}</TableCell>
+                            <TableCell className="hidden max-w-[300px] truncate sm:table-cell">
+                              {e.description ?? ""}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              ${e.amount.toFixed(2)}
+                            </TableCell>
+
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-2">
+                                <Button
+                                  variant="ghost"
+                                  className="h-8 px-2"
+                                  onClick={() =>
+                                    setEditingId((prev) =>
+                                      prev === e.id ? null : e.id
+                                    )
+                                  }
+                                >
+                                  {editingId === e.id ? "Close" : "Edit"}
+                                </Button>
+
+                                <DeleteExpenseDialog
+                                  onConfirm={async () => {
+                                    try {
+                                      setError(null);
+                                      await deleteExpense(e.id);
+                                      setExpenses((prev) =>
+                                        prev.filter((x) => x.id !== e.id)
+                                      );
+                                      setEditingId((prev) =>
+                                        prev === e.id ? null : prev
+                                      );
+                                    } catch {
+                                      setError("Failed to delete expense.");
+                                    }
+                                  }}
+                                />
+                              </div>
+                            </TableCell>
+                          </TableRow>
+
+                          {editingId === e.id && (
+                            <TableRow>
+                              <TableCell colSpan={5}>
+                                <InlineEditExpenseRow
+                                  expense={e}
+                                  onCancel={() => setEditingId(null)}
+                                  onSave={async (updated) => {
+                                    try {
+                                      setError(null);
+
+                                      const saved = await updateExpense({
+                                        id: updated.id,
+                                        amount: updated.amount,
+                                        currency: updated.currency ?? "CAD",
+                                        category: updated.category,
+                                        date: toApiDate(updated.date),
+                                        description: updated.description ?? "",
+                                      });
+
+                                      // Update UI immediately
+                                      setExpenses((prev) =>
+                                        prev.map((x) =>
+                                          x.id === saved.id ? saved : x
+                                        )
+                                      );
+
+                                      setEditingId(null);
+                                    } catch {
+                                      setError("Failed to update expense.");
+                                    }
+                                  }}
+                                />
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </Fragment>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </main>
+    </div>
+  );
+}
