@@ -4,29 +4,13 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import "./index.css";
 
-import {
-  PublicClientApplication,
-  type AuthenticationResult,
-} from "@azure/msal-browser";
+import type { AuthenticationResult } from "@azure/msal-browser";
 import { MsalProvider } from "@azure/msal-react";
-
-// Minimal MSAL config (kept inline for now so we don't touch other files)
-const msalInstance = new PublicClientApplication({
-  auth: {
-    clientId: import.meta.env.VITE_AUTH_CLIENT_ID as string,
-    authority: import.meta.env.VITE_AUTH_AUTHORITY as string,
-    redirectUri: import.meta.env.VITE_AUTH_REDIRECT_URI as string,
-  },
-  cache: {
-    cacheLocation: "localStorage",
-  },
-});
+import { msalInstance } from "@/auth/msalConfig";
 
 async function bootstrap() {
-  // MSAL v3+ requires explicit async initialization.
   await msalInstance.initialize();
 
-  // Ensure redirect responses are processed and an active account is selected on refresh
   try {
     const result: AuthenticationResult | null =
       await msalInstance.handleRedirectPromise();

@@ -1,12 +1,14 @@
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 import { InteractionStatus } from "@azure/msal-browser";
+
 import { HomePage } from "@/pages/HomePage";
 import { ExpensesPage } from "@/pages/ExpensesPage";
+
 export function AppRoutes() {
   const isAuthenticated = useIsAuthenticated();
   const location = useLocation();
-   const { inProgress } = useMsal();
+  const { inProgress } = useMsal();
   const msalReady = inProgress === InteractionStatus.None;
 
   return (

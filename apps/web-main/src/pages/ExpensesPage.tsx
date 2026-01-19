@@ -57,7 +57,7 @@ export function ExpensesPage() {
     (async () => {
       if (!msalReady) return;
 
-      const activeAccount = instance.getActiveAccount() ?? accounts[0];
+const activeAccount = instance.getActiveAccount() ?? instance.getAllAccounts()[0];
       if (!activeAccount) {
         if (!cancelled) setUserId(null);
         return;
