@@ -37,9 +37,12 @@ export function AppHeader({ title = "Montera" }: AppHeaderProps) {
             <Button asChild variant="ghost" size="sm">
               <Link to="/">Home</Link>
             </Button>
-            <Button asChild variant="ghost" size="sm">
-              <Link to="/expenses">Expenses</Link>
-            </Button>
+
+            {isAuthenticated && (
+              <Button asChild variant="ghost" size="sm">
+                <Link to="/expenses">Expenses</Link>
+              </Button>
+            )}
           </nav>
         </div>
 
@@ -76,9 +79,12 @@ export function AppHeader({ title = "Montera" }: AppHeaderProps) {
           <Button asChild variant="ghost" size="sm" className="flex-1">
             <Link to="/">Home</Link>
           </Button>
-          <Button asChild variant="ghost" size="sm" className="flex-1">
-            <Link to="/expenses">Expenses</Link>
-          </Button>
+
+          {isAuthenticated && (
+            <Button asChild variant="ghost" size="sm" className="flex-1">
+              <Link to="/expenses">Expenses</Link>
+            </Button>
+          )}
         </nav>
       </div>
     </header>

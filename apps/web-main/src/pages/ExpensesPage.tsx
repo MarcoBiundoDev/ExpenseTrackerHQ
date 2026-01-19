@@ -1,5 +1,9 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { useMsal } from "@azure/msal-react";
+import {
+  InteractionStatus,
+  type AuthenticationResult,
+} from "@azure/msal-browser";
 
 import { AppHeader } from "@/components/layout/AppHeader";
 import { MonthTabs } from "@/components/expenses/MonthTabs";
@@ -25,6 +29,15 @@ import {
 import { formatDate, monthKeyFromIsoDate } from "@/lib/date";
 import type { Expense } from "@/types/expense";
 
+function isGuid(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/.test(
+      value
+    )
+  );
+}
+
 export function ExpensesPage() {
   const [month, setMonth] = useState("Jan");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -32,20 +45,80 @@ export function ExpensesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { instance, accounts } = useMsal();
+  const [userId, setUserId] = useState<string | null>(null);
 
-  const activeAccount = instance.getActiveAccount() ?? accounts[0];
-  const claims = activeAccount?.idTokenClaims as
-    | Record<string, unknown>
-    | undefined;
+  const { instance, accounts, inProgress } = useMsal();
+  const msalReady = inProgress === InteractionStatus.None;
 
-  const oid =
-    typeof claims?.["oid"] === "string" ? (claims["oid"] as string) : undefined;
-  const sub =
-    typeof claims?.["sub"] === "string" ? (claims["sub"] as string) : undefined;
+  // Resolve userId reliably (refresh-safe)
+  useEffect(() => {
+    let cancelled = false;
 
-  // Prefer Entra object id (GUID). Fallback to sub.
-  const userId = oid ?? sub;
+    (async () => {
+      if (!msalReady) return;
+
+      const activeAccount = instance.getActiveAccount() ?? accounts[0];
+      if (!activeAccount) {
+        if (!cancelled) setUserId(null);
+        return;
+      }
+
+      // 1) Fast path: oid/sub from cached idTokenClaims
+      const claims = activeAccount.idTokenClaims as Record<string, unknown> | undefined;
+      const oid =
+        typeof claims?.["oid"] === "string" ? (claims["oid"] as string) : undefined;
+      const sub =
+        typeof claims?.["sub"] === "string" ? (claims["sub"] as string) : undefined;
+
+      if (isGuid(oid)) {
+        if (!cancelled) setUserId(oid);
+        return;
+      }
+
+      // sub is not usually a GUID, but keep as a last resort ONLY if it looks like one
+      if (isGuid(sub)) {
+        if (!cancelled) setUserId(sub);
+        return;
+      }
+
+      // 2) Fallback: localAccountId is often the objectId GUID for Entra accounts
+      const localId = (activeAccount as { localAccountId?: unknown }).localAccountId;
+      if (isGuid(localId)) {
+        if (!cancelled) setUserId(localId);
+        return;
+      }
+
+      // 3) Force hydration via silent token call, then re-check claims
+      try {
+        const result = (await instance.acquireTokenSilent({
+          scopes: ["openid", "profile", "email"],
+          account: activeAccount,
+        })) as AuthenticationResult;
+
+        const freshClaims = result.idTokenClaims as Record<string, unknown> | undefined;
+        const freshOid =
+          typeof freshClaims?.["oid"] === "string"
+            ? (freshClaims["oid"] as string)
+            : undefined;
+
+        if (isGuid(freshOid)) {
+          if (!cancelled) setUserId(freshOid);
+          return;
+        }
+
+        const fromAccountLocalId = (result.account as { localAccountId?: unknown } | null)
+          ?.localAccountId;
+
+        if (!cancelled) setUserId(isGuid(fromAccountLocalId) ? fromAccountLocalId : null);
+      } catch {
+        if (!cancelled) setUserId(null);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [msalReady, instance, accounts]);
 
   const safeExpenses = Array.isArray(expenses) ? expenses : [];
 
@@ -64,11 +137,15 @@ export function ExpensesPage() {
 
     (async () => {
       try {
+        if (!msalReady) return;
+
         setLoading(true);
         setError(null);
+
         if (!userId) {
           throw new Error("Missing user identity.");
         }
+
         const data = await getExpenses(userId);
         if (!cancelled) setExpenses(data);
       } catch {
@@ -81,7 +158,7 @@ export function ExpensesPage() {
     return () => {
       cancelled = true;
     };
-  }, [userId]);
+  }, [userId, msalReady]);
 
   function toIsoUtc(dateYYYYMMDD: string) {
     // Use noon UTC to avoid timezone shifting to the previous day
@@ -222,7 +299,8 @@ export function ExpensesPage() {
                                   onConfirm={async () => {
                                     try {
                                       setError(null);
-                                      if (!userId) throw new Error("Missing user identity.");
+                                      if (!userId)
+                                        throw new Error("Missing user identity.");
                                       await deleteExpense(e.id, userId);
                                       setExpenses((prev) =>
                                         prev.filter((x) => x.id !== e.id)
@@ -248,7 +326,8 @@ export function ExpensesPage() {
                                   onSave={async (updated) => {
                                     try {
                                       setError(null);
-                                      if (!userId) throw new Error("Missing user identity.");
+                                      if (!userId)
+                                        throw new Error("Missing user identity.");
                                       const saved = await updateExpense(
                                         {
                                           id: updated.id,
@@ -260,7 +339,7 @@ export function ExpensesPage() {
                                         },
                                         userId
                                       );
-                                      // Update UI immediately
+
                                       setExpenses((prev) =>
                                         prev.map((x) =>
                                           x.id === saved.id ? saved : x
