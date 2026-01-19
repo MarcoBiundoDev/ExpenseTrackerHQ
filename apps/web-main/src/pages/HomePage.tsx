@@ -1,113 +1,159 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useIsAuthenticated, useMsal } from "@azure/msal-react";
+import { loginRequest } from "@/auth/msalConfig";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { AppHeader } from "@/components/layout/AppHeader";
+import profileImage from "@/assets/marco.jpg";
 
 export function HomePage() {
+  const navigate = useNavigate();
+  const isAuthenticated = useIsAuthenticated();
+  const { instance } = useMsal();
   return (
     <div className="min-h-screen bg-background text-foreground">
       <AppHeader />
 
       <main className="mx-auto max-w-5xl px-6 py-10">
         {/* Hero */}
-        <section className="grid gap-10 lg:grid-cols-12 lg:items-start">
-          <div className="space-y-5 lg:col-span-7">
-            <div className="space-y-3">
-              <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-                Montera
-                <span className="text-muted-foreground"> Expense Tracker</span>
-              </h1>
+        <section className="grid gap-10 lg:grid-cols-12 lg:items-stretch">
+          <div className="flex h-full flex-col lg:col-span-7">
+            <div className="flex-grow space-y-5">
+              <div className="space-y-3">
+                <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
+                  Montera
+                  <span className="text-muted-foreground"> Expense Tracker</span>
+                </h1>
 
-              <p className="max-w-prose text-base text-muted-foreground sm:text-lg">
-                A production-minded frontend for an end-to-end cloud-native system.
-                Built to showcase real-world architecture: secure identity, API
-                gateway, private networking, observability, and modern CI/CD.
-              </p>
-            </div>
+                <p className="max-w-prose text-base text-muted-foreground sm:text-lg">
+                  A production-minded frontend for an end-to-end cloud-native system.
+                  Built to showcase real-world architecture: secure identity, API
+                  gateway, private networking, observability, and modern CI/CD.
+                </p>
+              </div>
 
-            <div className="flex flex-wrap gap-2">
-              <Badge variant="secondary">React + TypeScript</Badge>
-              <Badge variant="secondary">shadcn/ui</Badge>
-              <Badge variant="secondary">MSAL + Entra External ID</Badge>
-              <Badge variant="secondary">APIM</Badge>
-              <Badge variant="secondary">AKS</Badge>
-              <Badge variant="secondary">Terraform</Badge>
-              <Badge variant="secondary">Helm</Badge>
-              <Badge variant="secondary">OpenTelemetry</Badge>
-            </div>
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="secondary">React + TypeScript</Badge>
+                <Badge variant="secondary">shadcn/ui</Badge>
+                <Badge variant="secondary">MSAL + Entra External ID</Badge>
+                <Badge variant="secondary">APIM</Badge>
+                <Badge variant="secondary">AKS</Badge>
+                <Badge variant="secondary">Terraform</Badge>
+                <Badge variant="secondary">Helm</Badge>
+                <Badge variant="secondary">OpenTelemetry</Badge>
+                <Badge variant="secondary">Azure SQL + Private Endpoints</Badge>
+              </div>
 
-            {/* Primary actions only */}
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Button asChild className="sm:w-auto">
-                       <Link to="/login">Sign In</Link>
-              </Button>
-
-      
-            </div>
-
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">
-                Note: this project focuses on cloud-native execution and
-                engineering discipline (security by default, deterministic
-                deployments, and production-grade telemetry). The UI is
-                intentionally clean and fast.
-              </p>
-
-              <p className="text-sm text-muted-foreground pb-4">
-                Contact:{" "}
-                <a
-                  href="mailto:marcojbiundo@gmail.com"
-                  className="underline underline-offset-4 hover:text-foreground"
-                >
-                  marcojbiundo@gmail.com
-                </a>
-              </p>
-
-              <Card className="mt-8">
-                <CardHeader>
-                  <CardTitle className="text-base">Links</CardTitle>
-                </CardHeader>
-                <CardContent className="grid gap-3 sm:grid-cols-3">
-                  <Button asChild variant="secondary" className="justify-start">
-                    <a
-                      href="https://github.com/MarcoBiundoDev/ExpenseTrackerHQ"
-                      target="_blank"
-                      rel="noreferrer"
+              {/* Primary actions only */}
+              <div className="flex flex-col gap-3 sm:flex-row">
+                {!isAuthenticated && (
+                  <>
+                    <Button
+                      className="sm:w-auto"
+                      onClick={() => instance.loginRedirect(loginRequest)}
                     >
-                      GitHub Repo
-                    </a>
-                  </Button>
+                      Sign In
+                    </Button>
 
-                  <Button asChild variant="secondary" className="justify-start">
-                    <a
-                      href="https://www.linkedin.com/in/marcobiundo/"
-                      target="_blank"
-                      rel="noreferrer"
+                    <Button
+                      variant="secondary"
+                      className="sm:w-auto"
+                      onClick={() =>
+                        instance.loginRedirect({
+                          ...loginRequest,
+                          prompt: "create",
+                        })
+                      }
                     >
-                      LinkedIn
-                    </a>
-                  </Button>
+                      Sign Up
+                    </Button>
+                  </>
+                )}
 
-                  <Button asChild variant="secondary" className="justify-start">
-                    <a
-                      href="https://www.youtube.com/@MarcoBiundoDev"
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      YouTube
-                    </a>
+                {isAuthenticated && (
+                  <Button
+                    className="sm:w-auto"
+                    onClick={() => navigate("/expenses")}
+                  >
+                    Go to your Expenses
                   </Button>
-                </CardContent>
-              </Card>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  Note: this project focuses on cloud-native execution and
+                  engineering discipline (security by default, deterministic
+                  deployments, and production-grade telemetry). The UI is
+                  intentionally clean and fast.
+                </p>
+
+                <p className="text-sm text-muted-foreground pb-4">
+                  Contact:{" "}
+                  <a
+                    href="mailto:marcojbiundo@gmail.com"
+                    className="underline underline-offset-4 hover:text-foreground"
+                  >
+                    marcojbiundo@gmail.com
+                  </a>
+                </p>
+              </div>
             </div>
+
+            <Card className="mt-8">
+              <CardHeader className="flex flex-row items-center gap-3">
+                <img
+                  src={profileImage}
+                  alt="Marco Biundo"
+                  className="h-20 w-20 rounded-full object-cover border border-border"
+                />
+                <div>
+                  <CardTitle className="text-base">Developer Links</CardTitle>
+                  <p className="text-xs text-muted-foreground">
+                    Project source, professional profile, and demos
+                  </p>
+                </div>
+              </CardHeader>
+              <CardContent className="grid gap-3 sm:grid-cols-3 pt-2">
+                <Button asChild variant="secondary" className="justify-start">
+                  <a
+                    href="https://github.com/MarcoBiundoDev/ExpenseTrackerHQ"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    GitHub Repo
+                  </a>
+                </Button>
+
+                <Button asChild variant="secondary" className="justify-start">
+                  <a
+                    href="https://www.linkedin.com/in/marcobiundo/"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    LinkedIn
+                  </a>
+                </Button>
+
+                <Button asChild variant="secondary" className="justify-start">
+                  <a
+                    href="https://www.youtube.com/@MarcoBiundoDev"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    YouTube
+                  </a>
+                </Button>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Right column */}
-          <div className="lg:col-span-5">
-            <Card className="lg:sticky lg:top-6">
+          <div className="h-full lg:col-span-5">
+            <Card className="h-full lg:sticky lg:top-6">
               <CardHeader>
                 <CardTitle className="text-base">What this demonstrates</CardTitle>
               </CardHeader>
@@ -161,6 +207,15 @@ export function HomePage() {
                   <div>
                     Dockerized workloads, IaC with Terraform, and Helm-based
                     deployments for repeatable environments.
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-1">
+                  <div className="font-medium text-foreground">Data layer security</div>
+                  <div>
+                    Azure SQL secured with private endpoints and identity-based access patterns, no secrets exposed in the frontend.
                   </div>
                 </div>
               </CardContent>

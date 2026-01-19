@@ -1,20 +1,24 @@
 import { Link } from "react-router-dom";
-
 import { Wallet } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
- type AppHeaderProps = {
+import { useIsAuthenticated, useMsal } from "@azure/msal-react";
+
+type AppHeaderProps = {
   title?: string;
-  user?: string;
-  isAuthenticated?: boolean;
 };
 
-export function AppHeader({
-  title = "Montera",
-  user = "user@gmail.com",
-  isAuthenticated = true,
-}: AppHeaderProps) {
+const loginRequest = {
+  scopes: ["openid", "profile", "email"],
+};
+
+export function AppHeader({ title = "Montera" }: AppHeaderProps) {
+  const { instance, accounts } = useMsal();
+  const isAuthenticated = useIsAuthenticated();
+
+  const userEmail = accounts?.[0]?.username;
+
   return (
     <header className="border-b bg-background">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
@@ -41,18 +45,26 @@ export function AppHeader({
 
         {/* Right: User / Auth */}
         <div className="flex items-center gap-3">
+          {isAuthenticated && userEmail ? (
+            <span className="hidden text-sm text-muted-foreground sm:inline">
+              {userEmail}
+            </span>
+          ) : null}
+
           {isAuthenticated ? (
-            <>
-              <span className="hidden text-sm text-muted-foreground sm:inline">
-                {user}
-              </span>
-              <Button variant="outline" size="sm">
-                Logout
-              </Button>
-            </>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => instance.logoutRedirect()}
+            >
+              Logout
+            </Button>
           ) : (
-            <Button asChild size="sm">
-              <Link to="/login">Sign In</Link>
+            <Button
+              size="sm"
+              onClick={() => instance.loginRedirect(loginRequest)}
+            >
+              Sign In
             </Button>
           )}
         </div>

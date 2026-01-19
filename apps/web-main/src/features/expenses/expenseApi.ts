@@ -1,9 +1,6 @@
 import { apiClient } from "@/lib/apiClient";
 import type { Expense } from "@/types/expense";
 
-const DEV_USER_ID =
-  import.meta.env.VITE_DEV_USER_ID ?? "11111111-1111-1111-1111-111111111111";
-
 export type CreateExpenseRequest = {
   amount: number;
   currency: string; // "CAD"
@@ -21,7 +18,10 @@ export type UpdateExpenseRequest = {
   description?: string;
 };
 
-function userPath(userId = DEV_USER_ID) {
+function userPath(userId?: string) {
+  if (!userId) {
+    throw new Error("userId is required for expense API calls");
+  }
   return `/users/${userId}/expenses`;
 }
 
@@ -61,7 +61,6 @@ export async function updateExpense(
   const echoed = (res.data ?? {}) as Partial<Expense>;
 
   return {
-    id,
     amount: payload.amount,
     currency: payload.currency,
     category: payload.category,

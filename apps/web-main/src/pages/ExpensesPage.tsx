@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
+import { useMsal } from "@azure/msal-react";
 
 import { AppHeader } from "@/components/layout/AppHeader";
 import { MonthTabs } from "@/components/expenses/MonthTabs";
@@ -31,6 +32,21 @@ export function ExpensesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const { instance, accounts } = useMsal();
+
+  const activeAccount = instance.getActiveAccount() ?? accounts[0];
+  const claims = activeAccount?.idTokenClaims as
+    | Record<string, unknown>
+    | undefined;
+
+  const oid =
+    typeof claims?.["oid"] === "string" ? (claims["oid"] as string) : undefined;
+  const sub =
+    typeof claims?.["sub"] === "string" ? (claims["sub"] as string) : undefined;
+
+  // Prefer Entra object id (GUID). Fallback to sub.
+  const userId = oid ?? sub;
+
   const safeExpenses = Array.isArray(expenses) ? expenses : [];
 
   const filtered = useMemo(() => {
@@ -50,10 +66,13 @@ export function ExpensesPage() {
       try {
         setLoading(true);
         setError(null);
-        const data = await getExpenses();
+        if (!userId) {
+          throw new Error("Missing user identity.");
+        }
+        const data = await getExpenses(userId);
         if (!cancelled) setExpenses(data);
       } catch {
-        if (!cancelled) setError("Failed to load expenses from API.");
+        if (!cancelled) setError("Missing user identity. Please sign in again.");
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -62,7 +81,7 @@ export function ExpensesPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [userId]);
 
   function toIsoUtc(dateYYYYMMDD: string) {
     // Use noon UTC to avoid timezone shifting to the previous day
@@ -88,15 +107,17 @@ export function ExpensesPage() {
                 onAdd={async (e) => {
                   try {
                     setError(null);
-
-                    const created = await createExpense({
-                      amount: e.amount,
-                      currency: "CAD",
-                      category: e.category,
-                      date: toIsoUtc(e.date),
-                      description: e.description,
-                    });
-
+                    if (!userId) throw new Error("Missing user identity.");
+                    const created = await createExpense(
+                      {
+                        amount: e.amount,
+                        currency: "CAD",
+                        category: e.category,
+                        date: toIsoUtc(e.date),
+                        description: e.description,
+                      },
+                      userId
+                    );
                     setExpenses((prev) => [created, ...prev]);
                   } catch {
                     setError("Failed to add expense.");
@@ -201,7 +222,8 @@ export function ExpensesPage() {
                                   onConfirm={async () => {
                                     try {
                                       setError(null);
-                                      await deleteExpense(e.id);
+                                      if (!userId) throw new Error("Missing user identity.");
+                                      await deleteExpense(e.id, userId);
                                       setExpenses((prev) =>
                                         prev.filter((x) => x.id !== e.id)
                                       );
@@ -226,23 +248,24 @@ export function ExpensesPage() {
                                   onSave={async (updated) => {
                                     try {
                                       setError(null);
-
-                                      const saved = await updateExpense({
-                                        id: updated.id,
-                                        amount: updated.amount,
-                                        currency: updated.currency ?? "CAD",
-                                        category: updated.category,
-                                        date: toApiDate(updated.date),
-                                        description: updated.description ?? "",
-                                      });
-
+                                      if (!userId) throw new Error("Missing user identity.");
+                                      const saved = await updateExpense(
+                                        {
+                                          id: updated.id,
+                                          amount: updated.amount,
+                                          currency: updated.currency ?? "CAD",
+                                          category: updated.category,
+                                          date: toApiDate(updated.date),
+                                          description: updated.description ?? "",
+                                        },
+                                        userId
+                                      );
                                       // Update UI immediately
                                       setExpenses((prev) =>
                                         prev.map((x) =>
                                           x.id === saved.id ? saved : x
                                         )
                                       );
-
                                       setEditingId(null);
                                     } catch {
                                       setError("Failed to update expense.");
