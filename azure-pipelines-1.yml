@@ -11,10 +11,11 @@ pool:
 
 variables:
   azureServiceConnection: 'sc-expensetracker-dev'
+  acrDockerServiceConnection: 'sc-acr-expensetracker-dev'
   acrLoginServer: 'acrexptrackerhqdev01.azurecr.io'
   imageRepository: 'expense-api'
   dockerfilePath: 'apps/api/ExpenseTracker.Api/Dockerfile'
-  buildContext: 'apps/api'
+  buildContext: '.'
   imageTag: 'dev-$(Build.BuildId)'
 
 steps:
@@ -39,7 +40,7 @@ steps:
       buildContext: $(buildContext)
       tags: |
         $(imageTag)
-      containerRegistry: ''  # intentionally blank because we already did az acr login
+      containerRegistry: $(acrDockerServiceConnection)
 
   - task: Bash@3
     displayName: 'Print image reference'
