@@ -1,6 +1,13 @@
 trigger: none
 pr: none
 
+resources:
+  pipelines:
+    - pipeline: expenseApiCi          # local alias
+      source: ExpenseTrackerHQ Api CI     # <-- EXACT name of your CI pipeline in DevOps
+      trigger: true                   # CD runs after CI succeeds
+
+
 pool:
   name: Default
 
@@ -12,9 +19,8 @@ variables:
   releaseName: 'expense-api'
   chartPath: './infra/helm/expense-api'
   valuesFile: './infra/helm/expense-api/values-expense-dev.yaml'
+  imageTag: 'dev-$(resources.pipeline.expenseApiCi.runID)' 
 
-  # Default tag (you can override this at run time)
-  imageTag: 'dev-24'
 
 steps:
   - checkout: self
