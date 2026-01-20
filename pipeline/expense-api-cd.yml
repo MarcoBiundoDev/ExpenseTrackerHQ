@@ -1,13 +1,8 @@
 trigger: none
+pr: none
 
 pool:
   name: Default
-
-parameters:
-  - name: imageTag
-    displayName: ACR image tag to deploy (ex: dev-24)
-    type: string
-    default: dev-24
 
 variables:
   azureServiceConnection: 'sc-expensetracker-dev'
@@ -17,6 +12,9 @@ variables:
   releaseName: 'expense-api'
   chartPath: './infra/helm/expense-api'
   valuesFile: './infra/helm/expense-api/values-expense-dev.yaml'
+
+  # Default tag (you can override this at run time)
+  imageTag: 'dev-24'
 
 steps:
   - checkout: self
@@ -36,7 +34,7 @@ steps:
       helm upgrade $(releaseName) $(chartPath) \
         -n $(namespace) \
         -f $(valuesFile) \
-        --set image.tag=${{ parameters.imageTag }} \
+        --set image.tag=$(imageTag) \
         --wait --timeout 5m
 
       echo "Now running:"
