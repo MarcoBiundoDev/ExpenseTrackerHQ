@@ -216,7 +216,7 @@ const activeAccount = instance.getActiveAccount() ?? instance.getAllAccounts()[0
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-semibold">${total.toFixed(2)}</div>
+                <div className="text-2xl font-semibold sm:text-3xl">${total.toFixed(2)}</div>
                 <div className="text-sm text-muted-foreground">
                   {filtered.length} expenses
                 </div>
@@ -231,138 +231,249 @@ const activeAccount = instance.getActiveAccount() ?? instance.getAllAccounts()[0
 
             <CardContent className="px-3 sm:px-6">
               <div className="-mx-3 overflow-x-auto px-3 sm:-mx-0 sm:px-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead className="hidden sm:table-cell">
-                        Description
-                      </TableHead>
-                      <TableHead className="text-right whitespace-nowrap">Amount</TableHead>
-                      <TableHead className="text-right whitespace-nowrap">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-
-                  <TableBody>
-                    {loading ? (
-                      <TableRow>
-                        <TableCell
-                          colSpan={5}
-                          className="text-center text-sm text-muted-foreground"
-                        >
-                          Loading expenses...
-                        </TableCell>
-                      </TableRow>
-                    ) : error ? (
-                      <TableRow>
-                        <TableCell
-                          colSpan={5}
-                          className="text-center text-sm text-destructive"
-                        >
-                          {error}
-                        </TableCell>
-                      </TableRow>
-                    ) : filtered.length === 0 ? (
-                      <TableRow>
-                        <TableCell
-                          colSpan={5}
-                          className="text-center text-sm text-muted-foreground"
-                        >
-                          No expenses yet
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      filtered.map((e) => (
-                        <Fragment key={e.id}>
-                          <TableRow>
-                            <TableCell>{formatDate(e.date)}</TableCell>
-                            <TableCell>{e.category}</TableCell>
-                            <TableCell className="hidden max-w-[300px] truncate sm:table-cell">
-                              {e.description ?? ""}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              ${e.amount.toFixed(2)}
-                            </TableCell>
-
-                            <TableCell className="text-right">
-                              <div className="flex flex-wrap justify-end gap-2">
-                                <Button
-                                  variant="ghost"
-                                  className="h-8 px-2"
-                                  onClick={() =>
-                                    setEditingId((prev) =>
-                                      prev === e.id ? null : e.id
-                                    )
-                                  }
-                                >
-                                  {editingId === e.id ? "Close" : "Edit"}
-                                </Button>
-
-                                <DeleteExpenseDialog
-                                  onConfirm={async () => {
-                                    try {
-                                      setError(null);
-                                      if (!userId)
-                                        throw new Error("Missing user identity.");
-                                      await deleteExpense(e.id, userId);
-                                      setExpenses((prev) =>
-                                        prev.filter((x) => x.id !== e.id)
-                                      );
-                                      setEditingId((prev) =>
-                                        prev === e.id ? null : prev
-                                      );
-                                    } catch {
-                                      setError("Failed to delete expense.");
-                                    }
-                                  }}
-                                />
+                {/* Mobile: card list (table is unreadable on phones) */}
+                <div className="space-y-3 sm:hidden">
+                  {loading ? (
+                    <Card>
+                      <CardContent className="py-6 text-center text-sm text-muted-foreground">
+                        Loading expenses...
+                      </CardContent>
+                    </Card>
+                  ) : error ? (
+                    <Card>
+                      <CardContent className="py-6 text-center text-sm text-destructive">
+                        {error}
+                      </CardContent>
+                    </Card>
+                  ) : filtered.length === 0 ? (
+                    <Card>
+                      <CardContent className="py-6 text-center text-sm text-muted-foreground">
+                        No expenses yet
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    filtered.map((e) => (
+                      <Card key={e.id} className="overflow-hidden">
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <div className="text-sm text-muted-foreground">
+                                {formatDate(e.date)}
                               </div>
-                            </TableCell>
-                          </TableRow>
+                              <div className="font-medium truncate">{e.category}</div>
+                              {e.description ? (
+                                <div className="mt-1 text-sm text-muted-foreground break-words">
+                                  {e.description}
+                                </div>
+                              ) : null}
+                            </div>
 
-                          {editingId === e.id && (
+                            <div className="shrink-0 text-right">
+                              <div className="text-lg font-semibold">
+                                ${e.amount.toFixed(2)}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="mt-4 flex flex-wrap justify-end gap-2">
+                            <Button
+                              variant="secondary"
+                              className="h-9"
+                              onClick={() =>
+                                setEditingId((prev) => (prev === e.id ? null : e.id))
+                              }
+                            >
+                              {editingId === e.id ? "Close" : "Edit"}
+                            </Button>
+
+                            <DeleteExpenseDialog
+                              onConfirm={async () => {
+                                try {
+                                  setError(null);
+                                  if (!userId) throw new Error("Missing user identity.");
+                                  await deleteExpense(e.id, userId);
+                                  setExpenses((prev) => prev.filter((x) => x.id !== e.id));
+                                  setEditingId((prev) => (prev === e.id ? null : prev));
+                                } catch {
+                                  setError("Failed to delete expense.");
+                                }
+                              }}
+                            />
+                          </div>
+
+                          {editingId === e.id ? (
+                            <div className="mt-4">
+                              <InlineEditExpenseRow
+                                expense={e}
+                                onCancel={() => setEditingId(null)}
+                                onSave={async (updated) => {
+                                  try {
+                                    setError(null);
+                                    if (!userId) throw new Error("Missing user identity.");
+                                    const saved = await updateExpense(
+                                      {
+                                        id: updated.id,
+                                        amount: updated.amount,
+                                        currency: updated.currency ?? "CAD",
+                                        category: updated.category,
+                                        date: toApiDate(updated.date),
+                                        description: updated.description ?? "",
+                                      },
+                                      userId
+                                    );
+
+                                    setExpenses((prev) =>
+                                      prev.map((x) => (x.id === saved.id ? saved : x))
+                                    );
+                                    setEditingId(null);
+                                  } catch {
+                                    setError("Failed to update expense.");
+                                  }
+                                }}
+                              />
+                            </div>
+                          ) : null}
+                        </CardContent>
+                      </Card>
+                    ))
+                  )}
+                </div>
+
+                {/* Desktop/tablet: keep table */}
+                <div className="hidden sm:block">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead className="hidden sm:table-cell">
+                          Description
+                        </TableHead>
+                        <TableHead className="text-right whitespace-nowrap">Amount</TableHead>
+                        <TableHead className="text-right whitespace-nowrap">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+
+                    <TableBody>
+                      {loading ? (
+                        <TableRow>
+                          <TableCell
+                            colSpan={5}
+                            className="text-center text-sm text-muted-foreground"
+                          >
+                            Loading expenses...
+                          </TableCell>
+                        </TableRow>
+                      ) : error ? (
+                        <TableRow>
+                          <TableCell
+                            colSpan={5}
+                            className="text-center text-sm text-destructive"
+                          >
+                            {error}
+                          </TableCell>
+                        </TableRow>
+                      ) : filtered.length === 0 ? (
+                        <TableRow>
+                          <TableCell
+                            colSpan={5}
+                            className="text-center text-sm text-muted-foreground"
+                          >
+                            No expenses yet
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        filtered.map((e) => (
+                          <Fragment key={e.id}>
                             <TableRow>
-                              <TableCell colSpan={5}>
-                                <InlineEditExpenseRow
-                                  expense={e}
-                                  onCancel={() => setEditingId(null)}
-                                  onSave={async (updated) => {
-                                    try {
-                                      setError(null);
-                                      if (!userId)
-                                        throw new Error("Missing user identity.");
-                                      const saved = await updateExpense(
-                                        {
-                                          id: updated.id,
-                                          amount: updated.amount,
-                                          currency: updated.currency ?? "CAD",
-                                          category: updated.category,
-                                          date: toApiDate(updated.date),
-                                          description: updated.description ?? "",
-                                        },
-                                        userId
-                                      );
+                              <TableCell>{formatDate(e.date)}</TableCell>
+                              <TableCell>{e.category}</TableCell>
+                              <TableCell className="hidden max-w-[300px] truncate sm:table-cell">
+                                {e.description ?? ""}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                ${e.amount.toFixed(2)}
+                              </TableCell>
 
-                                      setExpenses((prev) =>
-                                        prev.map((x) =>
-                                          x.id === saved.id ? saved : x
-                                        )
-                                      );
-                                      setEditingId(null);
-                                    } catch {
-                                      setError("Failed to update expense.");
+                              <TableCell className="text-right">
+                                <div className="flex flex-wrap justify-end gap-2">
+                                  <Button
+                                    variant="ghost"
+                                    className="h-8 px-2"
+                                    onClick={() =>
+                                      setEditingId((prev) =>
+                                        prev === e.id ? null : e.id
+                                      )
                                     }
-                                  }}
-                                />
+                                  >
+                                    {editingId === e.id ? "Close" : "Edit"}
+                                  </Button>
+
+                                  <DeleteExpenseDialog
+                                    onConfirm={async () => {
+                                      try {
+                                        setError(null);
+                                        if (!userId)
+                                          throw new Error("Missing user identity.");
+                                        await deleteExpense(e.id, userId);
+                                        setExpenses((prev) =>
+                                          prev.filter((x) => x.id !== e.id)
+                                        );
+                                        setEditingId((prev) =>
+                                          prev === e.id ? null : prev
+                                        );
+                                      } catch {
+                                        setError("Failed to delete expense.");
+                                      }
+                                    }}
+                                  />
+                                </div>
                               </TableCell>
                             </TableRow>
-                          )}
-                        </Fragment>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
+
+                            {editingId === e.id && (
+                              <TableRow>
+                                <TableCell colSpan={5}>
+                                  <InlineEditExpenseRow
+                                    expense={e}
+                                    onCancel={() => setEditingId(null)}
+                                    onSave={async (updated) => {
+                                      try {
+                                        setError(null);
+                                        if (!userId)
+                                          throw new Error("Missing user identity.");
+                                        const saved = await updateExpense(
+                                          {
+                                            id: updated.id,
+                                            amount: updated.amount,
+                                            currency: updated.currency ?? "CAD",
+                                            category: updated.category,
+                                            date: toApiDate(updated.date),
+                                            description: updated.description ?? "",
+                                          },
+                                          userId
+                                        );
+
+                                        setExpenses((prev) =>
+                                          prev.map((x) =>
+                                            x.id === saved.id ? saved : x
+                                          )
+                                        );
+                                        setEditingId(null);
+                                      } catch {
+                                        setError("Failed to update expense.");
+                                      }
+                                    }}
+                                  />
+                                </TableCell>
+                              </TableRow>
+                            )}
+                          </Fragment>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
               </div>
             </CardContent>
           </Card>

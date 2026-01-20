@@ -17,25 +17,25 @@ export function HomePage() {
     <div className="min-h-screen bg-background text-foreground">
       <AppHeader />
 
-      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
+      <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-10">
         {/* Hero */}
         <section className="grid gap-10 lg:grid-cols-12 lg:items-stretch">
           <div className="flex h-full flex-col lg:col-span-7">
             <div className="flex-grow space-y-5">
               <div className="space-y-3">
-                <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
+                <h1 className="text-3xl font-semibold tracking-tight sm:text-5xl">
                   Montera
                   <span className="text-muted-foreground"> Expense Tracker</span>
                 </h1>
 
-                <p className="max-w-prose text-base text-muted-foreground sm:text-lg">
+                <p className="max-w-prose text-sm text-muted-foreground sm:text-lg">
                   A production-minded frontend for an end-to-end cloud-native system.
                   Built to showcase real-world architecture: secure identity, API
                   gateway, private networking, observability, and modern CI/CD.
                 </p>
               </div>
 
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 sm:gap-2">
                 <Badge variant="secondary">React + TypeScript</Badge>
                 <Badge variant="secondary">shadcn/ui</Badge>
                 <Badge variant="secondary">MSAL + Entra External ID</Badge>
@@ -52,7 +52,7 @@ export function HomePage() {
                 {!isAuthenticated && (
                   <>
                     <Button
-                      className="sm:w-auto"
+                      className="w-full sm:w-auto"
                       onClick={() => instance.loginRedirect(loginRequest)}
                     >
                       Sign In
@@ -60,7 +60,7 @@ export function HomePage() {
 
                     <Button
                       variant="secondary"
-                      className="sm:w-auto"
+                      className="w-full sm:w-auto"
                       onClick={() =>
                         instance.loginRedirect({
                           ...loginRequest,
@@ -75,7 +75,7 @@ export function HomePage() {
 
                 {isAuthenticated && (
                   <Button
-                    className="sm:w-auto"
+                    className="w-full sm:w-auto"
                     onClick={() => navigate("/expenses")}
                   >
                     Go to your Expenses
@@ -118,7 +118,7 @@ export function HomePage() {
                 </div>
               </CardHeader>
               <CardContent className="grid gap-3 pt-2 sm:grid-cols-3">
-                <Button asChild variant="secondary" className="justify-start">
+                <Button asChild variant="secondary" className="w-full justify-center sm:justify-start">
                   <a
                     href="https://github.com/MarcoBiundoDev/ExpenseTrackerHQ"
                     target="_blank"
@@ -128,7 +128,7 @@ export function HomePage() {
                   </a>
                 </Button>
 
-                <Button asChild variant="secondary" className="justify-start">
+                <Button asChild variant="secondary" className="w-full justify-center sm:justify-start">
                   <a
                     href="https://www.linkedin.com/in/marcobiundo/"
                     target="_blank"
@@ -138,7 +138,7 @@ export function HomePage() {
                   </a>
                 </Button>
 
-                <Button asChild variant="secondary" className="justify-start">
+                <Button asChild variant="secondary" className="w-full justify-center sm:justify-start">
                   <a
                     href="https://www.youtube.com/@MarcoBiundoDev"
                     target="_blank"
@@ -153,7 +153,7 @@ export function HomePage() {
 
           {/* Right column */}
           <div className="h-full lg:col-span-5">
-            <Card className="h-full lg:sticky lg:top-6">
+            <Card className="h-full">
               <CardHeader>
                 <CardTitle className="text-base">What this demonstrates</CardTitle>
               </CardHeader>
