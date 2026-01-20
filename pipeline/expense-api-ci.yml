@@ -1,0 +1,59 @@
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - apps/api/**
+
+pool:
+  name: Default
+
+variables:
+  azureServiceConnection: 'sc-expensetracker-dev'
+  acrLoginServer: 'acrexptrackerhqdev01.azurecr.io'
+  imageRepository: 'expense-api'
+  dockerfilePath: 'apps/api/ExpenseTracker.Api/Dockerfile'
+  buildContext: '.'
+  imageTag: 'dev-$(Build.BuildId)'
+
+steps:
+  - checkout: self
+    fetchDepth: 0
+
+  - task: AzureCLI@2
+    displayName: 'ACR login (federated)'
+    inputs:
+      azureSubscription: $(azureServiceConnection)
+      scriptType: bash
+      scriptLocation: inlineScript
+      inlineScript: |
+        az acr login --name acrexptrackerhqdev01
+
+  - task: Bash@3
+    displayName: 'Build & push linux/amd64 image to ACR (buildx)'
+    inputs:
+      targetType: inline
+      script: |
+        set -euo pipefail
+
+        IMAGE="$(acrLoginServer)/$(imageRepository):$(imageTag)"
+        echo "Building and pushing: $IMAGE"
+
+        # Ensure buildx builder exists and is selected
+        docker buildx create --name ci-builder --use >/dev/null 2>&1 || docker buildx use ci-builder
+
+        # Build + push AMD64 (AKS nodes are amd64)
+        docker buildx build \
+          --platform linux/amd64 \
+          -f "$(dockerfilePath)" \
+          -t "$IMAGE" \
+          "$(buildContext)" \
+          --push
+
+  - task: Bash@3
+    displayName: 'Print image reference'
+    inputs:
+      targetType: inline
+      script: |
+        echo "Pushed: $(acrLoginServer)/$(imageRepository):$(imageTag)"
