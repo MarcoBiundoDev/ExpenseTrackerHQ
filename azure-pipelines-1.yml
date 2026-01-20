@@ -7,7 +7,7 @@ trigger:
       - apps/api/**
 
 pool:
-  vmImage: ubuntu-latest
+  name: Default
 
 variables:
   azureServiceConnection: 'sc-expensetracker-dev'
