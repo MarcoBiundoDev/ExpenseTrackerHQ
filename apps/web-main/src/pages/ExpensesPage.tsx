@@ -174,10 +174,14 @@ const activeAccount = instance.getActiveAccount() ?? instance.getAllAccounts()[0
     <div className="min-h-screen bg-background text-foreground">
       <AppHeader />
 
-      <main className="mx-auto max-w-5xl px-4 py-5 sm:px-6 sm:py-6">
+      <main className="mx-auto max-w-5xl px-3 py-4 sm:px-6 sm:py-6">
         <div className="space-y-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <MonthTabs value={month} onChange={setMonth} />
+            <div className="-mx-3 overflow-x-auto px-3 sm:mx-0 sm:overflow-visible sm:px-0">
+              <div className="min-w-max">
+                <MonthTabs value={month} onChange={setMonth} />
+              </div>
+            </div>
 
             <div className="w-full sm:flex sm:w-auto sm:justify-end">
               <AddExpenseModal
@@ -225,8 +229,8 @@ const activeAccount = instance.getActiveAccount() ?? instance.getAllAccounts()[0
               <CardTitle className="text-base">Expenses</CardTitle>
             </CardHeader>
 
-            <CardContent>
-              <div className="-mx-2 overflow-x-auto px-2">
+            <CardContent className="px-3 sm:px-6">
+              <div className="-mx-3 overflow-x-auto px-3 sm:-mx-0 sm:px-0">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -235,8 +239,8 @@ const activeAccount = instance.getActiveAccount() ?? instance.getAllAccounts()[0
                       <TableHead className="hidden sm:table-cell">
                         Description
                       </TableHead>
-                      <TableHead className="text-right">Amount</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead className="text-right whitespace-nowrap">Amount</TableHead>
+                      <TableHead className="text-right whitespace-nowrap">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
 
@@ -282,7 +286,7 @@ const activeAccount = instance.getActiveAccount() ?? instance.getAllAccounts()[0
                             </TableCell>
 
                             <TableCell className="text-right">
-                              <div className="flex justify-end gap-2">
+                              <div className="flex flex-wrap justify-end gap-2">
                                 <Button
                                   variant="ghost"
                                   className="h-8 px-2"

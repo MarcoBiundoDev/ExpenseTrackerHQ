@@ -17,7 +17,7 @@ export function HomePage() {
     <div className="min-h-screen bg-background text-foreground">
       <AppHeader />
 
-      <main className="mx-auto max-w-5xl px-6 py-10">
+      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
         {/* Hero */}
         <section className="grid gap-10 lg:grid-cols-12 lg:items-stretch">
           <div className="flex h-full flex-col lg:col-span-7">
@@ -104,7 +104,7 @@ export function HomePage() {
             </div>
 
             <Card className="mt-8">
-              <CardHeader className="flex flex-row items-center gap-3">
+              <CardHeader className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
                 <img
                   src={profileImage}
                   alt="Marco Biundo"
@@ -117,7 +117,7 @@ export function HomePage() {
                   </p>
                 </div>
               </CardHeader>
-              <CardContent className="grid gap-3 sm:grid-cols-3 pt-2">
+              <CardContent className="grid gap-3 pt-2 sm:grid-cols-3">
                 <Button asChild variant="secondary" className="justify-start">
                   <a
                     href="https://github.com/MarcoBiundoDev/ExpenseTrackerHQ"
