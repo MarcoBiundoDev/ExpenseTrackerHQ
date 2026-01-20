@@ -1,0 +1,44 @@
+trigger: none
+
+pool:
+  name: Default
+
+parameters:
+  - name: imageTag
+    displayName: ACR image tag to deploy (ex: dev-24)
+    type: string
+    default: dev-24
+
+variables:
+  azureServiceConnection: 'sc-expensetracker-dev'
+  aksResourceGroup: 'rg-expensetracker-network-dev'
+  aksClusterName: 'aks-expensetracker-dev'
+  namespace: 'expense-dev'
+  releaseName: 'expense-api'
+  chartPath: './infra/helm/expense-api'
+  valuesFile: './infra/helm/expense-api/values-expense-dev.yaml'
+
+steps:
+  - checkout: self
+    fetchDepth: 0
+
+  - task: AzureCLI@2
+    displayName: 'AKS get-credentials'
+    inputs:
+      azureSubscription: $(azureServiceConnection)
+      scriptType: bash
+      scriptLocation: inlineScript
+      inlineScript: |
+        az aks get-credentials -g $(aksResourceGroup) -n $(aksClusterName) --overwrite-existing
+        kubectl get nodes
+
+  - script: |
+      helm upgrade $(releaseName) $(chartPath) \
+        -n $(namespace) \
+        -f $(valuesFile) \
+        --set image.tag=${{ parameters.imageTag }} \
+        --wait --timeout 5m
+
+      echo "Now running:"
+      kubectl get deploy $(releaseName) -n $(namespace) -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+    displayName: 'Helm upgrade (deploy image tag)'
