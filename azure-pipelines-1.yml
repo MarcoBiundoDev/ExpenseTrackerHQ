@@ -1,0 +1,49 @@
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - apps/api/**
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  azureServiceConnection: 'sc-expensetracker-dev'
+  acrLoginServer: 'acrexptrackerhqdev01.azurecr.io'
+  imageRepository: 'expense-api'
+  dockerfilePath: 'apps/api/ExpenseTracker.Api/Dockerfile'
+  buildContext: 'apps/api'
+  imageTag: 'dev-$(Build.BuildId)'
+
+steps:
+  - checkout: self
+    fetchDepth: 0
+
+  - task: AzureCLI@2
+    displayName: 'ACR login (federated)'
+    inputs:
+      azureSubscription: $(azureServiceConnection)
+      scriptType: bash
+      scriptLocation: inlineScript
+      inlineScript: |
+        az acr login --name acrexptrackerhqdev01
+
+  - task: Docker@2
+    displayName: 'Build and push image to ACR'
+    inputs:
+      command: buildAndPush
+      repository: $(imageRepository)
+      dockerfile: $(dockerfilePath)
+      buildContext: $(buildContext)
+      tags: |
+        $(imageTag)
+      containerRegistry: ''  # intentionally blank because we already did az acr login
+
+  - task: Bash@3
+    displayName: 'Print image reference'
+    inputs:
+      targetType: inline
+      script: |
+        echo "Pushed: $(acrLoginServer)/$(imageRepository):$(imageTag)"
