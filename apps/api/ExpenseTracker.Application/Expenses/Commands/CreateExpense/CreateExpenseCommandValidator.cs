@@ -22,8 +22,6 @@ public class CreateExpenseCommandValidator : AbstractValidator<CreateExpenseComm
             .MaximumLength(250);
 
         RuleFor(x => x.Date)
-            .LessThanOrEqualTo(DateTime.UtcNow)
-            .WithMessage("Date cannot be in the future.")
             .GreaterThan(DateTime.UtcNow.AddYears(-5))
             .WithMessage("Date must be within the last 5 years.");
     }
