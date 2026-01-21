@@ -6,6 +6,23 @@ This repository intentionally mirrors how real-world teams structure and operate
 
 ---
 
+## Why This Project Exists 
+
+ExpenseTrackerHQ was built to **demonstrate senior-level, real-world engineering capability**, not to showcase a single framework or tutorial outcome.
+
+The goal was to design and build an **end-to-end, cloud-native system** the way it would be done inside a professional engineering organization—working backward from production expectations rather than forward from examples.
+
+This project intentionally focuses on:
+- System design and architectural decision-making
+- Production-oriented defaults (security, networking, observability)
+- Infrastructure-as-Code and repeatable deployments
+- CI/CD pipelines that mirror real enterprise workflows
+- Clear separation of concerns across backend, frontend, and platform layers
+
+Every major decision—from Clean Architecture in the API, to Kubernetes + Helm deployments, to Azure-native identity and networking—was made to reflect **how modern teams actually build, ship, and operate software at scale**.
+
+This repository exists as a **portfolio-grade reference** that demonstrates depth, not just breadth.
+
 ## Project Goals
 
 This project is designed to showcase:
@@ -56,26 +73,28 @@ ExpenseTrackerHQ consists of the following layers:
 ExpenseTrackerHQ/
 ├── apps/
 │   ├── api/                 # .NET backend (ExpenseTracker.Api, Domain, Infra)
-│   ├── web-main/            # Primary React frontend
-│   ├── web-gemini-a/        # AI-generated frontend variant
-│   └── web-gemini-b/        # AI-generated frontend variant
+│   ├── Migrations/          # Migration Runner Project/Helm Job Source
+│   └── web-main/            # React frontend
+│  
+│  
+├── docs/
+│   ├── Mermaid Charts/               # Architecture diagrams & explanations
+│   ├── Phase-1- Backend/             # Notes & Sprint Walkthroughs
+│   ├── Phase-2- K8s Helm/            # Notes & Sprint Walkthroughs
+│   ├── Phase-3- Azure Infra/         # Notes & Sprint Walkthroughs
+│   ├── Phase-4- Security & Identity/ # Notes & Sprint Walkthroughs
+│   ├── Phase-5- Observability/       # Notes & Sprint Walkthroughs
+│   └── Phase-6- Frontend & CICD/     # Notes & Sprint Walkthroughs
 │
 ├── infra/
 │   ├── helm/                # Helm charts for Kubernetes deployments
-│   ├── terraform/           # Azure IaC (AKS, ACR, SQL, networking)
-│   └── k8s/                 # Optional raw Kubernetes manifests (local testing)
+│   ├── k8s/                 # Optional raw Kubernetes manifests (local testing)
+│   └── terraform/           # Azure IaC (AKS, ACR, SQL, networking, Observability)
 │
 ├── ops/
 │   ├── postman/             # Postman collections for API testing
-│   ├── sql/                 # SQL scripts, stored procedures, seed data
-│   └── runbooks/            # Operational notes and procedures
+│   └── sql/                 # SQL scripts, stored procedures, seed data
 │
-├── docs/
-│   ├── architecture/        # Architecture diagrams & explanations
-│   ├── phase-1/             # API & local infrastructure notes
-│   ├── phase-2/             # Kubernetes & Helm notes
-│   ├── phase-3/             # Azure & Terraform notes
-│   └── terraform/           # Terraform learning & reference material
+├── pipeline/                # CICD YAML Pipelines
 │
-├── scripts/                 # Helper scripts (local dev, CI/CD)
 └── README.md
