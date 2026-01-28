@@ -1,5 +1,11 @@
 # ExpenseTrackerHQ
 
+
+
+🎥 Architecture Overview
+
+[![Architecture Overview Video](https://img.youtube.com/vi/EKfLfc6lGG8/0.jpg)](https://www.youtube.com/watch?v=EKfLfc6lGG8)
+
 **ExpenseTrackerHQ** is a cloud-native, production-style expense tracking platform built as a **portfolio-grade system** to demonstrate modern backend development, Kubernetes deployment, and Azure infrastructure using Infrastructure as Code.
 
 This repository intentionally mirrors how real-world teams structure and operate cloud platforms — it is **not** a toy project.
@@ -97,4 +103,5 @@ ExpenseTrackerHQ/
 │
 ├── pipeline/                # CICD YAML Pipelines
 │
+
 └── README.md
